@@ -56,6 +56,36 @@ import {
   aqAdolescentHelpInfo
 } from './aq-adolescent.js'
 
+import {
+  ipdeConfig,
+  ipdeScaleData,
+  ipdeHelpInfo
+} from './ipde.js'
+
+import {
+  salamancaConfig,
+  salamancaScaleData,
+  salamancaHelpInfo
+} from './salamanca.js'
+
+import {
+  sssVConfig,
+  sssVScaleData,
+  sssVHelpInfo
+} from './sss-v.js'
+
+import {
+  auditConfig,
+  auditScaleData,
+  auditHelpInfo
+} from './audit.js'
+
+import {
+  bdi13Config,
+  bdi13ScaleData,
+  bdi13HelpInfo
+} from './bdi-13.js'
+
 // Configuraciones de escalas consolidadas
 export const scaleConfigs = {
   phq9: phq9Config,
@@ -66,7 +96,12 @@ export const scaleConfigs = {
   'beck-21': beck21Config,
   cdi: cdiConfig,
   'aq-child': aqChildConfig,
-  'aq-adolescent': aqAdolescentConfig
+  'aq-adolescent': aqAdolescentConfig,
+  ipde: ipdeConfig,
+  salamanca: salamancaConfig,
+  'sss-v': sssVConfig,
+  audit: auditConfig,
+  'bdi-13': bdi13Config
 }
 
 // Datos del catálogo de escalas consolidados
@@ -80,6 +115,11 @@ export const scalesData = [
   cdiScaleData,
   aqChildScaleData,
   aqAdolescentScaleData,
+  ipdeScaleData,
+  salamancaScaleData,
+  sssVScaleData,
+  auditScaleData,
+  bdi13ScaleData,
   // Escalas no implementadas (mantenidas para compatibilidad)
   {
     id: 'beck21',
@@ -93,7 +133,7 @@ export const scalesData = [
     diagnostics: ['Depresión'],
     tags: ['Depresión', 'Evaluación', 'DSM-IV'],
     available: false,
-    icon: 'knowledge',
+    icon: 'picklist-type-svgrepo-com',
     color: '#3b82f6'
   },
   {
@@ -108,7 +148,7 @@ export const scalesData = [
     diagnostics: ['Ansiedad'],
     tags: ['Ansiedad', 'TAG', 'Screening'],
     available: false,
-    icon: 'brain',
+    icon: 'picklist-type-svgrepo-com',
     color: '#f59e0b'
   },
   {
@@ -123,7 +163,7 @@ export const scalesData = [
     diagnostics: ['Depresión'],
     tags: ['Depresión', 'Clínica', 'Heteroaplicada'],
     available: false,
-    icon: 'knowledge',
+    icon: 'picklist-type-svgrepo-com',
     color: '#8b5cf6'
   },
   {
@@ -138,7 +178,7 @@ export const scalesData = [
     diagnostics: ['Bipolar', 'Manía'],
     tags: ['Bipolar', 'Manía', 'Evaluación'],
     available: false,
-    icon: 'brain',
+    icon: 'picklist-type-svgrepo-com',
     color: '#ec4899'
   },
   {
@@ -153,7 +193,7 @@ export const scalesData = [
     diagnostics: ['Deterioro cognitivo', 'Demencia'],
     tags: ['Cognitivo', 'Demencia', 'Screening'],
     available: false,
-    icon: 'brain',
+    icon: 'picklist-type-svgrepo-com',
     color: '#06b6d4'
   }
 ]
@@ -169,6 +209,11 @@ export const scalesHelpInfo = {
   cdi: cdiHelpInfo,
   'aq-child': aqChildHelpInfo,
   'aq-adolescent': aqAdolescentHelpInfo,
+  ipde: ipdeHelpInfo,
+  salamanca: salamancaHelpInfo,
+  'sss-v': sssVHelpInfo,
+  audit: auditHelpInfo,
+  'bdi-13': bdi13HelpInfo,
   // Información de escalas no implementadas (mantenida para compatibilidad)
   beck21: {
     purpose: "El BDI-II evalúa la severidad de síntomas depresivos en las últimas dos semanas, basado en criterios del DSM-IV.",
@@ -323,3 +368,6 @@ export * from './beck-21.js'
 export * from './cdi.js'
 export * from './aq-child.js'
 export * from './aq-adolescent.js'
+export * from './ipde.js'
+export * from './salamanca.js'
+export * from './sss-v.js'
