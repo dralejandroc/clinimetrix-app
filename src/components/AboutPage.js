@@ -18,7 +18,7 @@ export default function AboutPage() {
               <div className="bg-primary-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-primary-700 mb-2">38+ Escalas Validadas</h3>
                 <p className="text-sm text-gray-600">
-                  Amplia biblioteca de escalas psicológicas y psiquiátricas validadas científicamente
+                  Amplia biblioteca de escalas clinimetricas estandarizadas para uso de profesionales de la salud mental validadas científicamente
                 </p>
               </div>
               <div className="bg-primary-50 p-4 rounded-lg">
@@ -30,13 +30,13 @@ export default function AboutPage() {
               <div className="bg-primary-50 p-4 rounded-lg">
                 <h3 className="font-semibold text-primary-700 mb-2">Reportes Automáticos</h3>
                 <p className="text-sm text-gray-600">
-                  Interpretaciones clínicas automáticas basadas en criterios científicos
+                  Interpretaciones clínicas automáticas basadas en criterios científicos estandarizados
                 </p>
               </div>
               <div className="bg-primary-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-primary-700 mb-2">Historial Clínico</h3>
+                <h3 className="font-semibold text-primary-700 mb-2">Historico de esclas aplicadas</h3>
                 <p className="text-sm text-gray-600">
-                  Seguimiento longitudinal de la evolución de tus pacientes
+                  Seguimiento longitudinal de la evolución de tus pacientes segun resultados de evaluaciones administradas
                 </p>
               </div>
             </div>
@@ -66,7 +66,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-semibold text-primary-600 mb-4">Para Profesionales</h2>
             <p className="text-gray-600 mb-4">
               Clinimetrix está diseñado específicamente para psicólogos, psiquiatras, y otros profesionales 
-              de la salud mental que requieren herramientas de evaluación confiables y eficientes.
+              de la salud mental que requieren herramientas de evaluación confiables y eficientes, con evidencia cientifica validada.
             </p>
             
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
