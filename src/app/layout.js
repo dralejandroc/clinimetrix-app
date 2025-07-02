@@ -1,4 +1,5 @@
 import './globals.css'
+import Auth0ProviderWrapper from '../components/Auth0Provider'
 
 export const metadata = {
   title: 'Clinimetrix - MindHub',
@@ -14,7 +15,9 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" href="/LogoPrincipal.svg" />
       </head>
       <body>
-        {children}
+        <Auth0ProviderWrapper>
+          {children}
+        </Auth0ProviderWrapper>
       </body>
     </html>
   )

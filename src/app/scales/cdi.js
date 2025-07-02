@@ -524,7 +524,7 @@ export const cdiScaleData = {
   diagnostics: ['Depresión Infantil', 'Trastornos del Estado de Ánimo', 'Evaluación Pediátrica'],
   tags: ['Depresión', 'Infantil', 'Adolescentes', 'Kovacs', 'Pediatría', 'Disforia'],
   available: true,
-  icon: 'people',
+  icon: 'picklist-type-svgrepo-com',
   color: '#ec4899'
 }
 

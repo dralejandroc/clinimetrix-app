@@ -638,7 +638,7 @@ export const aqAdolescentScaleData = {
   diagnostics: ['Trastorno del Espectro Autista', 'Evaluación Adolescente', 'Screening TEA'],
   tags: ['TEA', 'Autismo', 'Adolescentes', 'Desarrollo', 'Screening', 'Baron-Cohen', '10-17 años'],
   available: true,
-  icon: 'brain',
+  icon: 'picklist-type-svgrepo-com',
   color: '#8b5cf6'
 }
 

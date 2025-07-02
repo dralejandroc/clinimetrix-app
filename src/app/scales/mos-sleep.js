@@ -415,7 +415,7 @@ export const mosSleepScaleData = {
   diagnostics: ['Trastornos del sueño', 'Insomnio', 'Apnea del sueño', 'Hipersomnia'],
   tags: ['Sueño', 'Calidad de vida', 'Subescalas múltiples', 'Evaluación integral'],
   available: true,
-  icon: 'brain',
+  icon: 'picklist-type-svgrepo-com',
   color: '#9333ea'
 }
 

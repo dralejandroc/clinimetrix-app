@@ -267,7 +267,7 @@ export const harsScaleData = {
   diagnostics: ['Ansiedad'],
   tags: ['Ansiedad', 'Hamilton', 'Heteroaplicada', 'Clínica'],
   available: true,
-  icon: 'brain',
+  icon: 'picklist-type-svgrepo-com',
   color: '#f59e0b'
 }
 

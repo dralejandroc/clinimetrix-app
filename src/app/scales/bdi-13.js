@@ -1,4 +1,4 @@
-// BDI-13 - Beck Depression Inventory-13 (Versión Abreviada)
+// Beck-13 - Inventario de Depresión de Beck (Versión Abreviada)
 // Inventario de Depresión de Beck versión corta de 13 ítems
 
 export const bdi13Questions = [
@@ -202,9 +202,9 @@ export const calculateBdi13Score = (responses = {}) => {
 
 export const bdi13Config = {
   id: 'bdi-13',
-  name: 'BDI-13',
-  fullName: 'Beck Depression Inventory-13',
-  shortName: 'BDI-13',
+  name: 'Beck-13',
+  fullName: 'Inventario de Depresión de Beck (Versión Abreviada)',
+  shortName: 'Beck-13',
   description: 'Versión abreviada del Inventario de Depresión de Beck de aplicación rápida para evaluación de síntomas depresivos',
   version: '1.0',
   author: 'Aaron T. Beck',
@@ -321,7 +321,7 @@ export const bdi13Config = {
 
   // Instrucciones especiales para el paciente
   patientInstructions: {
-    title: 'Instrucciones para el BDI-13',
+    title: 'Instrucciones para el Beck-13',
     content: [
       '📋 Este cuestionario consiste en 13 grupos de afirmaciones',
       '👁️ Por favor, lea atentamente cada grupo completo antes de realizar su elección',
@@ -336,8 +336,8 @@ export const bdi13Config = {
 // Datos para el catálogo de escalas
 export const bdi13ScaleData = {
   id: 'bdi-13',
-  fullName: 'Beck Depression Inventory-13',
-  shortName: 'BDI-13',
+  fullName: 'Inventario de Depresión de Beck (Versión Abreviada)',
+  shortName: 'Beck-13',
   description: 'Versión abreviada del Inventario de Depresión de Beck de aplicación rápida para evaluación de síntomas depresivos con sistema de puntuación simplificado',
   questions: 13,
   duration: '3-5',
@@ -353,8 +353,8 @@ export const bdi13ScaleData = {
 // Información de ayuda detallada
 export const bdi13HelpInfo = {
   id: 'bdi-13',
-  title: 'BDI-13 - Inventario de Depresión de Beck (Versión Abreviada)',
-  description: 'El BDI-13 es una versión abreviada del Beck Depression Inventory que mantiene las propiedades psicométricas del instrumento original con un formato más breve y aplicación más rápida.',
+  title: 'Beck-13 - Inventario de Depresión de Beck (Versión Abreviada)',
+  description: 'El Beck-13 es una versión abreviada del Beck Depression Inventory que mantiene las propiedades psicométricas del instrumento original con un formato más breve y aplicación más rápida.',
   
   sections: {
     objetivo: {

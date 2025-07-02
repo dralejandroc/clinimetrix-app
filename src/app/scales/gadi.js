@@ -222,7 +222,7 @@ export const gadiScaleData = {
   diagnostics: ['Ansiedad'],
   tags: ['Ansiedad', 'TAG'],
   available: true,
-  icon: 'brain',
+  icon: 'picklist-type-svgrepo-com',
   color: '#EC7367'
 }
 

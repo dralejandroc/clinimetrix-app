@@ -365,7 +365,7 @@ export const bls23ScaleData = {
   diagnostics: ['Trastorno Límite de Personalidad', 'Trastornos de Personalidad', 'Evaluación de riesgo'],
   tags: ['Personalidad', 'TLP', 'Autolesión', 'Conductas de riesgo', 'Evaluación integral'],
   available: true,
-  icon: 'brain',
+  icon: 'picklist-type-svgrepo-com',
   color: '#8b5cf6'
 }
 

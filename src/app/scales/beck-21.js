@@ -607,7 +607,7 @@ export const beck21ScaleData = {
   diagnostics: ['Depresión Mayor', 'Trastornos del Estado de Ánimo', 'Evaluación de severidad'],
   tags: ['Depresión', 'Beck', 'Subescalas múltiples', 'Clásica', 'Ampliamente utilizada'],
   available: true,
-  icon: 'brain',
+  icon: 'picklist-type-svgrepo-com',
   color: '#3b82f6'
 }
 

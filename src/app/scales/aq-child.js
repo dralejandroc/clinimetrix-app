@@ -317,28 +317,28 @@ export const aqChildOptions = [
   { 
     text: "Muy de acuerdo", 
     value: 0, 
-    emoji: "😊", 
+    emoji: "✅", 
     color: "linear-gradient(135deg, #48bb78, #38a169)", // Verde intenso
     textColor: "white"
   },
   { 
     text: "Medianamente de acuerdo", 
     value: 1, 
-    emoji: "🙂", 
+    emoji: "☑️", 
     color: "linear-gradient(135deg, #68d391, #48bb78)", // Verde claro
     textColor: "white"
   },
   { 
     text: "Medianamente en desacuerdo", 
     value: 2, 
-    emoji: "😐", 
+    emoji: "🤔", 
     color: "linear-gradient(135deg, #fc8181, #f56565)", // Rojo claro
     textColor: "white"
   },
   { 
     text: "Muy en desacuerdo", 
     value: 3, 
-    emoji: "🙁", 
+    emoji: "❌", 
     color: "linear-gradient(135deg, #f56565, #e53e3e)", // Rojo intenso
     textColor: "white"
   }
@@ -641,7 +641,7 @@ export const aqChildScaleData = {
   diagnostics: ['Trastorno del Espectro Autista', 'Evaluación del Desarrollo', 'Screening TEA'],
   tags: ['TEA', 'Autismo', 'Infantil', 'Desarrollo', 'Padres', 'Screening', 'Baron-Cohen'],
   available: true,
-  icon: 'people',
+  icon: 'picklist-type-svgrepo-com',
   color: '#8b5cf6'
 }
 
