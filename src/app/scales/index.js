@@ -86,6 +86,48 @@ import {
   bdi13HelpInfo
 } from './bdi-13.js'
 
+import {
+  esadfunConfig,
+  esadfunScaleData,
+  esadfunHelpInfo
+} from './esadfun.js'
+
+import {
+  ctqSfConfig,
+  ctqSfScaleData,
+  ctqSfHelpInfo
+} from './ctq-sf.js'
+
+import {
+  dtsConfig,
+  dtsScaleData,
+  dtsHelpInfo
+} from './dts.js'
+
+import {
+  eat26Config,
+  eat26ScaleData,
+  eat26HelpInfo
+} from './eat-26.js'
+
+import {
+  cpqAConfig,
+  cpqAScaleData,
+  cpqAHelpInfo
+} from './cpq-a.js'
+
+import {
+  epdsConfig,
+  epdsScaleData,
+  epdsHelpInfo
+} from './epds.js'
+
+import {
+  iief15Config,
+  iief15ScaleData,
+  iief15HelpInfo
+} from './iief-15.js'
+
 // Configuraciones de escalas consolidadas
 export const scaleConfigs = {
   phq9: phq9Config,
@@ -101,7 +143,14 @@ export const scaleConfigs = {
   salamanca: salamancaConfig,
   'sss-v': sssVConfig,
   audit: auditConfig,
-  'bdi-13': bdi13Config
+  'bdi-13': bdi13Config,
+  esadfun: esadfunConfig,
+  'ctq-sf': ctqSfConfig,
+  dts: dtsConfig,
+  'eat-26': eat26Config,
+  'cpq-a': cpqAConfig,
+  epds: epdsConfig,
+  'iief-15': iief15Config
 }
 
 // Datos del catálogo de escalas consolidados
@@ -120,10 +169,17 @@ export const scalesData = [
   sssVScaleData,
   auditScaleData,
   bdi13ScaleData,
+  esadfunScaleData,
+  ctqSfScaleData,
+  dtsScaleData,
+  eat26ScaleData,
+  cpqAScaleData,
+  epdsScaleData,
+  iief15ScaleData,
   // Escalas no implementadas (mantenidas para compatibilidad)
   {
     id: 'beck21',
-    fullName: 'Beck Depression Inventory-II',
+    fullName: 'Inventario de Depresión de Beck-II',
     shortName: 'Beck-21',
     description: 'Inventario de autoevaluación que mide la intensidad de síntomas depresivos basado en criterios del DSM-IV.',
     questions: 21,
@@ -138,7 +194,7 @@ export const scalesData = [
   },
   {
     id: 'gad7',
-    fullName: 'Generalized Anxiety Disorder 7-item',
+    fullName: 'Trastorno de Ansiedad Generalizada-7',
     shortName: 'GAD-7',
     description: 'Herramienta de detección para el trastorno de ansiedad generalizada y para medir la gravedad de los síntomas.',
     questions: 7,
@@ -153,7 +209,7 @@ export const scalesData = [
   },
   {
     id: 'hamilton',
-    fullName: 'Hamilton Depression Rating Scale',
+    fullName: 'Escala de Depresión de Hamilton',
     shortName: 'HAM-D',
     description: 'Escala heteroaplicada que evalúa la gravedad de síntomas depresivos mediante entrevista clínica estructurada.',
     questions: 17,
@@ -168,7 +224,7 @@ export const scalesData = [
   },
   {
     id: 'ymrs',
-    fullName: 'Young Mania Rating Scale',
+    fullName: 'Escala de Manía de Young',
     shortName: 'YMRS',
     description: 'Escala para evaluar la intensidad de síntomas maníacos en pacientes con trastorno bipolar.',
     questions: 11,
@@ -183,7 +239,7 @@ export const scalesData = [
   },
   {
     id: 'mmse',
-    fullName: 'Mini-Mental State Examination',
+    fullName: 'Examen Cognoscitivo Mini-Mental',
     shortName: 'MMSE',
     description: 'Prueba breve de detección de deterioro cognitivo y demencia en adultos mayores.',
     questions: 30,
@@ -214,6 +270,13 @@ export const scalesHelpInfo = {
   'sss-v': sssVHelpInfo,
   audit: auditHelpInfo,
   'bdi-13': bdi13HelpInfo,
+  esadfun: esadfunHelpInfo,
+  'ctq-sf': ctqSfHelpInfo,
+  dts: dtsHelpInfo,
+  'eat-26': eat26HelpInfo,
+  'cpq-a': cpqAHelpInfo,
+  epds: epdsHelpInfo,
+  'iief-15': iief15HelpInfo,
   // Información de escalas no implementadas (mantenida para compatibilidad)
   beck21: {
     purpose: "El BDI-II evalúa la severidad de síntomas depresivos en las últimas dos semanas, basado en criterios del DSM-IV.",
@@ -371,3 +434,12 @@ export * from './aq-adolescent.js'
 export * from './ipde.js'
 export * from './salamanca.js'
 export * from './sss-v.js'
+export * from './audit.js'
+export * from './bdi-13.js'
+export * from './esadfun.js'
+export * from './ctq-sf.js'
+export * from './dts.js'
+export * from './eat-26.js'
+export * from './cpq-a.js'
+export * from './epds.js'
+export * from './iief-15.js'
