@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+// import { useAuth0 } from '@auth0/auth0-react' // COMENTADO TEMPORALMENTE PARA DESARROLLO LOCAL
 import { jsPDF } from 'jspdf'
 import { 
   scaleConfigs, 
@@ -13,16 +14,11 @@ import {
 // Componente para iconos SVG coloreados
 const SvgIcon = ({ name, size = '1.2rem', color = 'currentColor' }) => {
   const [imageError, setImageError] = useState(false)
-  const [imageSrc, setImageSrc] = useState(`/icons/${name}-colored.svg`)
+  const [imageSrc, setImageSrc] = useState(`/icons/${name}.svg`)
   
-  // Intentar primero con -colored, luego sin -colored
+  // Fallback si no se encuentra el icono
   const handleImageError = () => {
-    if (imageSrc.includes('-colored.svg')) {
-      setImageSrc(`/icons/${name}.svg`)
-    } else {
-      // Mostrar fallback inmediatamente
-      setImageError(true)
-    }
+    setImageError(true)
   }
   
   if (imageError) {
@@ -34,13 +30,14 @@ const SvgIcon = ({ name, size = '1.2rem', color = 'currentColor' }) => {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#f0f0f0',
+          backgroundColor: '#29A98C',
           borderRadius: '4px',
-          fontSize: '0.7rem',
-          color: '#666'
+          fontSize: '0.8rem',
+          color: 'white',
+          fontWeight: 'bold'
         }}
       >
-        {name.charAt(0).toUpperCase()}
+        {name.substring(0, 2).toUpperCase()}
       </span>
     )
   }
@@ -60,9 +57,12 @@ const SvgIcon = ({ name, size = '1.2rem', color = 'currentColor' }) => {
 }
 
 export default function HomePage() {
-  const [currentPage, setCurrentPage] = useState('signup')
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState(null)
+  // Auth0 hooks - COMENTADO TEMPORALMENTE PARA DESARROLLO LOCAL
+  // const { loginWithRedirect, logout, user: auth0User, isAuthenticated: auth0IsAuthenticated, isLoading } = useAuth0()
+  
+  const [currentPage, setCurrentPage] = useState('dashboard')
+  const [isAuthenticated, setIsAuthenticated] = useState(true)
+  const [user, setUser] = useState({ name: 'Usuario Local', email: 'local@mindhub.cloud' })
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '' })
   const [isLoginMode, setIsLoginMode] = useState(true)
@@ -84,9 +84,22 @@ export default function HomePage() {
     priority: 'medium',
     email: user?.email || ''
   })
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    location: '',
+    message: ''
+  })
   const [scalesView, setScalesView] = useState('grid') // 'grid', 'list', 'favorites'
   const [scalesSearch, setScalesSearch] = useState('')
-  const [favoriteScales, setFavoriteScales] = useState(['phq9']) // PHQ-9 marcado como favorito por defecto
+  const [favoriteScales, setFavoriteScales] = useState(() => {
+    // Cargar favoritos desde localStorage o usar PHQ-9 por defecto
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('clinimetrix-favorites')
+      return saved ? JSON.parse(saved) : ['phq9']
+    }
+    return ['phq9']
+  })
   const [showScaleHelp, setShowScaleHelp] = useState(false)
   const [currentScaleHelp, setCurrentScaleHelp] = useState(null)
   
@@ -113,6 +126,25 @@ export default function HomePage() {
   // Estados genéricos para escalas (reemplaza estados específicos)
   const [scaleResponses, setScaleResponses] = useState({})
   const [currentScaleConfig, setCurrentScaleConfig] = useState(null)
+
+  // Sync Auth0 authentication state with local state
+  // COMENTADO TEMPORALMENTE PARA DESARROLLO LOCAL
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     setIsAuthenticated(auth0IsAuthenticated)
+  //     if (auth0IsAuthenticated && auth0User) {
+  //       setUser({
+  //         name: auth0User.name || auth0User.email?.split('@')[0] || 'Usuario',
+  //         email: auth0User.email,
+  //         picture: auth0User.picture
+  //       })
+  //       setCurrentPage('dashboard')
+  //     } else {
+  //       setUser(null)
+  //       setCurrentPage('signup')
+  //     }
+  //   }
+  // }, [auth0IsAuthenticated, auth0User, isLoading])
 
   const handleNavigate = (page) => {
     setCurrentPage(page)
@@ -147,11 +179,17 @@ export default function HomePage() {
   }
 
   const handleLogout = () => {
+    // COMENTADO TEMPORALMENTE PARA DESARROLLO LOCAL
+    // logout({ 
+    //   logoutParams: { 
+    //     returnTo: window.location.origin 
+    //   } 
+    // })
+    
+    // Para desarrollo local, simplemente resetear estado
     setIsAuthenticated(false)
     setUser(null)
     setCurrentPage('signup')
-    setLoginForm({ email: '', password: '' })
-    setRegisterForm({ name: '', email: '', password: '' })
   }
 
   // Función para buscar pacientes
@@ -235,9 +273,10 @@ export default function HomePage() {
   const handleScaleResponse = (questionId, value) => {
     if (!currentScaleConfig) return
     
+    // Mantener el valor tal como viene, sin conversiones que puedan causar problemas
     setScaleResponses(prev => ({
       ...prev,
-      [questionId]: parseInt(value)
+      [questionId]: value
     }))
     
     // Auto-advance to next question after a shorter delay
@@ -399,6 +438,19 @@ export default function HomePage() {
     setCurrentPage('dashboard')
   }
 
+  const handleContactSubmit = (e) => {
+    e.preventDefault()
+    // Simulación de envío de contacto
+    alert('¡Gracias por contactarnos! Hemos recibido tu mensaje y nos pondremos en contacto contigo pronto.')
+    setContactForm({
+      name: '',
+      email: '',
+      location: '',
+      message: ''
+    })
+    setCurrentPage('dashboard')
+  }
+
   // Función para mostrar ayuda de escala
   const showScaleHelpModal = (scaleId) => {
     setCurrentScaleHelp(scaleId)
@@ -407,11 +459,18 @@ export default function HomePage() {
 
   // Función para agregar/quitar favoritos
   const toggleFavorite = (scaleId) => {
-    setFavoriteScales(prev => 
-      prev.includes(scaleId) 
+    setFavoriteScales(prev => {
+      const newFavorites = prev.includes(scaleId) 
         ? prev.filter(id => id !== scaleId)
         : [...prev, scaleId]
-    )
+      
+      // Guardar en localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('clinimetrix-favorites', JSON.stringify(newFavorites))
+      }
+      
+      return newFavorites
+    })
   }
 
   const goBackGenericScale = () => {
@@ -429,8 +488,9 @@ export default function HomePage() {
     setShowWelcome(false)
     setShowProfessionalCard(false)
     
-    // Para escalas heteroaplicadas, saltar las instrucciones del paciente
+    // Para escalas heteroaplicadas, auto-seleccionar modo local y saltar las instrucciones del paciente
     if (currentScaleConfig && currentScaleConfig.applicationType === 'Heteroaplicada') {
+      setApplicationMode('local') // Auto-seleccionar local para heteroaplicadas
       setShowPatientInstructions(false)
       setCurrentQuestionIndex(0)
     } else {
@@ -447,7 +507,9 @@ export default function HomePage() {
 
   const showGenericResults = () => {
     if (!currentScaleConfig) return
-    setCurrentPage(currentScaleConfig.id + '-results')
+    
+    // Usar la página de GADI results como página genérica ya que tiene el código para manejar todas las escalas
+    setCurrentPage('gadi-results')
   }
 
   return (
@@ -874,77 +936,133 @@ export default function HomePage() {
           <div style={{ backgroundColor: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3rem' }}>
             <div style={{ width: '100%', maxWidth: '24rem' }}>
               <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#112F33', marginBottom: '0.5rem' }}>
-                {isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta'}
+                Acceso Profesional
               </h2>
               <p style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '2rem' }}>
-                {isLoginMode ? 'Accede a tu cuenta profesional' : 'Únete a más de 1,000 profesionales de la salud mental'}
+                Únete a más de 1,000 profesionales de la salud mental
               </p>
               
-              <form onSubmit={isLoginMode ? handleLogin : handleRegister}>
-                {!isLoginMode && (
-                  <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                      Nombre completo
-                    </label>
-                    <input 
-                      style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', outline: 'none' }} 
-                      placeholder="Dr. Juan Pérez"
-                      value={registerForm.name}
-                      onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
-                      required={!isLoginMode}
-                    />
+              {false ? ( // isLoading comentado para desarrollo local
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div style={{ fontSize: '1rem', color: '#6b7280' }}>Cargando...</div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {/* Google Login */}
+                  <button 
+                    onClick={() => {
+                      // loginWithRedirect({ connection: 'google-oauth2' }) // COMENTADO PARA DESARROLLO LOCAL
+                      setIsAuthenticated(true)
+                      setUser({ name: 'Usuario Google', email: 'google@mindhub.cloud' })
+                      setCurrentPage('dashboard')
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.75rem', 
+                      backgroundColor: '#4285f4', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '0.5rem', 
+                      cursor: 'pointer', 
+                      fontSize: '1rem', 
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.2rem' }}>🔍</span>
+                    Continuar con Google
+                  </button>
+
+                  {/* Email/Password Login */}
+                  <button 
+                    onClick={() => {
+                      // loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } }) // COMENTADO PARA DESARROLLO LOCAL
+                      setIsAuthenticated(true)
+                      setUser({ name: 'Usuario Email', email: 'email@mindhub.cloud' })
+                      setCurrentPage('dashboard')
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.75rem', 
+                      background: 'linear-gradient(135deg, #29A98C 0%, #112F33 100%)', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '0.5rem', 
+                      cursor: 'pointer', 
+                      fontSize: '1rem', 
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.2rem' }}>📧</span>
+                    Continuar con Email
+                  </button>
+
+                  {/* Microsoft Login */}
+                  <button 
+                    onClick={() => {
+                      // loginWithRedirect({ connection: 'windowslive' }) // COMENTADO PARA DESARROLLO LOCAL
+                      setIsAuthenticated(true)
+                      setUser({ name: 'Usuario Microsoft', email: 'microsoft@mindhub.cloud' })
+                      setCurrentPage('dashboard')
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '0.75rem', 
+                      backgroundColor: '#0078d4', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '0.5rem', 
+                      cursor: 'pointer', 
+                      fontSize: '1rem', 
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.2rem' }}>🪟</span>
+                    Continuar con Microsoft
+                  </button>
+
+                  <div style={{ textAlign: 'center', margin: '1rem 0' }}>
+                    <div style={{ borderTop: '1px solid #e5e7eb', position: 'relative' }}>
+                      <span style={{ 
+                        backgroundColor: 'white', 
+                        color: '#6b7280', 
+                        padding: '0 1rem', 
+                        position: 'absolute', 
+                        top: '-0.6rem', 
+                        left: '50%', 
+                        transform: 'translateX(-50%)',
+                        fontSize: '0.875rem'
+                      }}>
+                        Acceso seguro y profesional
+                      </span>
+                    </div>
                   </div>
-                )}
-                
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                    Email profesional
-                  </label>
-                  <input 
-                    style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', outline: 'none' }} 
-                    placeholder="dr.juan@clinica.com"
-                    type="email"
-                    value={isLoginMode ? loginForm.email : registerForm.email}
-                    onChange={(e) => isLoginMode ? 
-                      setLoginForm({...loginForm, email: e.target.value}) : 
-                      setRegisterForm({...registerForm, email: e.target.value})}
-                    required
-                  />
+
+                  <div style={{ 
+                    backgroundColor: '#f3f4f6', 
+                    padding: '1rem', 
+                    borderRadius: '0.5rem', 
+                    fontSize: '0.875rem', 
+                    color: '#374151',
+                    textAlign: 'center',
+                    lineHeight: '1.5'
+                  }}>
+                    <strong>🔒 Seguridad garantizada</strong><br/>
+                    Usamos Auth0 para proteger tu información profesional y cumplir con los estándares de seguridad médica.
+                  </div>
                 </div>
-                
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>
-                    Contraseña
-                  </label>
-                  <input 
-                    style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', outline: 'none' }} 
-                    placeholder="••••••••" 
-                    type="password"
-                    value={isLoginMode ? loginForm.password : registerForm.password}
-                    onChange={(e) => isLoginMode ? 
-                      setLoginForm({...loginForm, password: e.target.value}) : 
-                      setRegisterForm({...registerForm, password: e.target.value})}
-                    required
-                  />
-                </div>
-                
-                <button 
-                  type="submit"
-                  style={{ width: '100%', padding: '0.75rem', background: 'linear-gradient(135deg, #29A98C 0%, #112F33 100%)', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '1rem', fontWeight: '600', marginBottom: '1rem' }}
-                >
-                  {isLoginMode ? 'Iniciar Sesión' : 'Crear Cuenta'}
-                </button>
-              </form>
-              
-              <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
-                {isLoginMode ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
-                <button 
-                  style={{ background: 'none', border: 'none', color: '#29A98C', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500' }}
-                  onClick={() => setIsLoginMode(!isLoginMode)}
-                >
-                  {isLoginMode ? 'Crear cuenta' : 'Inicia sesión'}
-                </button>
-              </p>
+              )}
             </div>
           </div>
         </div>
@@ -958,7 +1076,7 @@ export default function HomePage() {
             {/* Welcome Header */}
             <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
               <h1 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#112F33', marginBottom: '0.75rem' }}>
-                ¡Bienvenido {user?.name}! <SvgIcon name="analyse" size="1.8rem" />
+                ¡Bienvenido {user?.name}! <SvgIcon name="analyse-svgrepo-com" size="1.8rem" />
               </h1>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.9rem', color: '#64748b', marginBottom: '0.5rem' }}>
                 <span>Plan actual: <strong style={{ color: '#29A98C' }}>{user?.plan}</strong></span>
@@ -1019,7 +1137,7 @@ export default function HomePage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
               <div style={{ backgroundColor: 'white', borderRadius: '10px', padding: '1rem', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <SvgIcon name="team-member" size="1.8rem" />
+                  <SvgIcon name="analyse-svgrepo-com" size="1.8rem" />
                   <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#112F33', margin: 0 }}>42</p>
                 </div>
                 <h3 style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
@@ -1030,7 +1148,7 @@ export default function HomePage() {
 
               <div style={{ backgroundColor: 'white', borderRadius: '10px', padding: '1rem', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <SvgIcon name="omni-supervisor" size="1.8rem" />
+                  <SvgIcon name="budget-allocation-svgrepo-com" size="1.8rem" />
                   <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#112F33', margin: 0 }}>127</p>
                 </div>
                 <h3 style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
@@ -1041,7 +1159,7 @@ export default function HomePage() {
 
               <div style={{ backgroundColor: 'white', borderRadius: '10px', padding: '1rem', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <SvgIcon name="network-contract" size="1.8rem" />
+                  <SvgIcon name="contact-list-svgrepo-com" size="1.8rem" />
                   <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#112F33', margin: 0 }}>8</p>
                 </div>
                 <h3 style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
@@ -1052,7 +1170,7 @@ export default function HomePage() {
 
               <div style={{ backgroundColor: 'white', borderRadius: '10px', padding: '1rem', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <SvgIcon name="metrics" size="1.8rem" />
+                  <SvgIcon name="operating-hours-svgrepo-com" size="1.8rem" />
                   <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#112F33', margin: 0 }}>15</p>
                 </div>
                 <h3 style={{ fontSize: '0.75rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
@@ -1068,7 +1186,7 @@ export default function HomePage() {
               {/* Escalas Favoritas */}
               <div style={{ backgroundColor: 'white', borderRadius: '10px', padding: '1.5rem', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 'bold', color: '#112F33', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <SvgIcon name="opportunity" size="1.5rem" /> Escalas Favoritas
+                  <SvgIcon name="opportunity-svgrepo-com" size="1.5rem" /> Escalas Favoritas
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <button 
@@ -1154,25 +1272,25 @@ export default function HomePage() {
               {/* Actividad Reciente */}
               <div style={{ backgroundColor: 'white', borderRadius: '10px', padding: '1.5rem', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 'bold', color: '#112F33', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <SvgIcon name="metrics" size="1rem" /> Actividad Reciente
+                  <SvgIcon name="product-request-svgrepo-com" size="2rem" /> Actividad Reciente
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: '6px', height: '6px', backgroundColor: '#10b981', borderRadius: '50%' }}></div>
+                    <div style={{ width: '6px', height: '6px', backgroundColor: '#29A98C', borderRadius: '50%' }}></div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: '0.75rem', color: '#112F33', fontWeight: '500', margin: 0 }}>PHQ-9 completado</p>
                       <p style={{ fontSize: '0.675rem', color: '#64748b', margin: 0 }}>María García • Hace 2h</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: '6px', height: '6px', backgroundColor: '#3b82f6', borderRadius: '50%' }}></div>
+                    <div style={{ width: '6px', height: '6px', backgroundColor: '#29A98C', borderRadius: '50%' }}></div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: '0.75rem', color: '#112F33', fontWeight: '500', margin: 0 }}>Nuevo paciente registrado</p>
                       <p style={{ fontSize: '0.675rem', color: '#64748b', margin: 0 }}>Carlos Ruiz • Ayer</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: '6px', height: '6px', backgroundColor: '#f59e0b', borderRadius: '50%' }}></div>
+                    <div style={{ width: '6px', height: '6px', backgroundColor: '#EC7367', borderRadius: '50%' }}></div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontSize: '0.75rem', color: '#112F33', fontWeight: '500', margin: 0 }}>Reporte generado</p>
                       <p style={{ fontSize: '0.675rem', color: '#64748b', margin: 0 }}>Hace 3 días</p>
@@ -1280,7 +1398,7 @@ export default function HomePage() {
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    ⭐ Favoritas
+                    <SvgIcon name="opportunity-svgrepo-com" size="1rem" /> Favoritas
                   </button>
                 </div>
               </div>
@@ -1316,7 +1434,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Vista en Tarjetas */}
-                  {scalesView === 'grid' && (
+                  {(scalesView === 'grid' || scalesView === 'favorites') && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
                       {filteredScales.map(scale => (
                   <div key={scale.id} style={{ 
@@ -1328,7 +1446,10 @@ export default function HomePage() {
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     opacity: scale.available ? 1 : 0.7,
-                    position: 'relative'
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%'
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
@@ -1364,7 +1485,7 @@ export default function HomePage() {
                         e.currentTarget.style.backgroundColor = 'transparent'
                       }}
                     >
-                      {favoriteScales.includes(scale.id) ? '⭐' : '☆'}
+                      <SvgIcon name="opportunity-svgrepo-com" size="1rem" color={favoriteScales.includes(scale.id) ? '#29A98C' : '#d1d5db'} />
                     </button>
                     
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.875rem' }}>
@@ -1389,7 +1510,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     
-                    <p style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '0.875rem', lineHeight: '1.4' }}>
+                    <p style={{ color: '#64748b', fontSize: '0.8rem', marginBottom: '0.875rem', lineHeight: '1.4', flex: 1 }}>
                       {scale.description}
                     </p>
                     
@@ -1551,7 +1672,7 @@ export default function HomePage() {
                           e.currentTarget.style.backgroundColor = 'transparent'
                         }}
                       >
-                        {favoriteScales.includes(scale.id) ? '⭐' : '☆'}
+                        <SvgIcon name="opportunity-svgrepo-com" size="1rem" color={favoriteScales.includes(scale.id) ? '#29A98C' : '#d1d5db'} />
                       </button>
                       <button 
                         onClick={() => showScaleHelpModal(scale.id)}
@@ -1602,7 +1723,7 @@ export default function HomePage() {
                   {filteredScales.length === 0 && (
                     <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '3rem', textAlign: 'center', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)' }}>
                       <span style={{ fontSize: '3rem', marginBottom: '1rem', display: 'block' }}>
-                        {scalesView === 'favorites' ? '⭐' : '🔍'}
+                        <SvgIcon name={scalesView === 'favorites' ? 'opportunity-svgrepo-com' : 'product-request-svgrepo-com'} size="2rem" color="#6b7280" />
                       </span>
                       <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#112F33', marginBottom: '0.5rem' }}>
                         {scalesView === 'favorites' ? 'No tienes escalas favoritas' : 'No se encontraron escalas'}
@@ -3763,29 +3884,36 @@ export default function HomePage() {
                   </p>
                   <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-                    gap: '15px'
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
+                    gap: '10px'
                   }}>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', color: '#29A98C', marginBottom: '5px' }}>📊</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#112F33' }}>
+                      <div style={{ fontSize: '0.9rem', color: '#29A98C', marginBottom: '2px' }}>📊</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#112F33' }}>
                         {currentScaleConfig.questions.length} preguntas
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Total de ítems</div>
+                      <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>Total de ítems</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', color: '#29A98C', marginBottom: '5px' }}>⏱️</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#112F33' }}>
+                      <div style={{ fontSize: '0.9rem', color: '#29A98C', marginBottom: '2px' }}>⏱️</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#112F33' }}>
                         {currentScaleConfig.timeEstimate}
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Duración estimada</div>
+                      <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>Duración estimada</div>
                     </div>
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', color: '#29A98C', marginBottom: '5px' }}>📈</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#112F33' }}>
+                      <div style={{ fontSize: '0.9rem', color: '#29A98C', marginBottom: '2px' }}>📈</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: '600', color: '#112F33' }}>
                         {currentScaleConfig.scoreRange}
                       </div>
-                      <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Rango de puntuación</div>
+                      <div style={{ fontSize: '0.65rem', color: '#6b7280' }}>
+                        Rango de puntuación
+                        {currentScaleConfig.factors && (
+                          <span style={{ color: '#29A98C', marginLeft: '8px' }}>
+                            • {Object.keys(currentScaleConfig.factors).length} subescalas
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -3910,47 +4038,57 @@ export default function HomePage() {
                       }}
                     >
                       <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>🏥</div>
-                      <div style={{ fontWeight: '600', fontSize: '1.1rem', marginBottom: '5px' }}>En Consultorio</div>
-                      <div style={{ fontSize: '0.9rem', opacity: '0.8' }}>El paciente completa la escala con supervisión presencial</div>
+                      <div style={{ fontWeight: '600', fontSize: '1.1rem', marginBottom: '5px' }}>
+                        {currentScaleConfig?.applicationType === 'Heteroaplicada' ? 'Aplicación por Profesional' : 'En Consultorio'}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', opacity: '0.8' }}>
+                        {currentScaleConfig?.applicationType === 'Heteroaplicada' 
+                          ? 'El profesional administra la escala al paciente'
+                          : 'El paciente completa la escala con supervisión presencial'
+                        }
+                      </div>
                     </div>
                     
-                    <div
-                      onClick={() => selectApplicationMode('remote')}
-                      style={{
-                        background: applicationMode === 'remote' ? 'linear-gradient(135deg, #29A98C, #112F33)' : 'white',
-                        color: applicationMode === 'remote' ? 'white' : '#112F33',
-                        border: `2px solid ${applicationMode === 'remote' ? '#29A98C' : '#e0e0e0'}`,
-                        borderRadius: '12px',
-                        padding: '15px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        textAlign: 'center'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (applicationMode !== 'remote') {
-                          e.target.style.borderColor = '#29A98C'
-                          e.target.style.transform = 'translateY(-2px)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (applicationMode !== 'remote') {
-                          e.target.style.borderColor = '#e0e0e0'
-                          e.target.style.transform = 'translateY(0)'
-                        }
-                      }}
-                    >
-                      <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>🏠</div>
-                      <div style={{ fontWeight: '600', fontSize: '1.1rem', marginBottom: '5px' }}>A Distancia</div>
-                      <div style={{ fontSize: '0.9rem', opacity: '0.8' }}>El paciente completa la escala de forma remota</div>
-                    </div>
+                    {/* Solo mostrar opción remota para escalas autoaplicadas */}
+                    {currentScaleConfig?.applicationType !== 'Heteroaplicada' && (
+                      <div
+                        onClick={() => selectApplicationMode('remote')}
+                        style={{
+                          background: applicationMode === 'remote' ? 'linear-gradient(135deg, #29A98C, #112F33)' : 'white',
+                          color: applicationMode === 'remote' ? 'white' : '#112F33',
+                          border: `2px solid ${applicationMode === 'remote' ? '#29A98C' : '#e0e0e0'}`,
+                          borderRadius: '12px',
+                          padding: '15px',
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease',
+                          textAlign: 'center'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (applicationMode !== 'remote') {
+                            e.target.style.borderColor = '#29A98C'
+                            e.target.style.transform = 'translateY(-2px)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (applicationMode !== 'remote') {
+                            e.target.style.borderColor = '#e0e0e0'
+                            e.target.style.transform = 'translateY(0)'
+                          }
+                        }}
+                      >
+                        <div style={{ fontSize: '1.5rem', marginBottom: '8px' }}>🏠</div>
+                        <div style={{ fontWeight: '600', fontSize: '1.1rem', marginBottom: '5px' }}>A Distancia</div>
+                        <div style={{ fontSize: '0.9rem', opacity: '0.8' }}>El paciente completa la escala de forma remota</div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <button
                   onClick={startGenericQuestionnaire}
-                  disabled={!applicationMode}
+                  disabled={currentScaleConfig?.applicationType === 'Heteroaplicada' ? false : !applicationMode}
                   style={{
-                    backgroundColor: !applicationMode ? '#ccc' : '#29A98C',
+                    backgroundColor: (currentScaleConfig?.applicationType === 'Heteroaplicada' ? true : applicationMode) ? '#29A98C' : '#ccc',
                     color: 'white',
                     border: 'none',
                     borderRadius: '25px',
@@ -3974,7 +4112,11 @@ export default function HomePage() {
                     }
                   }}
                 >
-                  {applicationMode === 'local' ? '👨‍⚕️ Entregar Dispositivo al Paciente' : '📱 Enviar Enlace al Paciente'}
+                  {
+                    currentScaleConfig?.applicationType === 'Heteroaplicada' 
+                      ? '🏥 Iniciar Escala'
+                      : (applicationMode === 'local' ? '👨‍⚕️ Entregar Dispositivo al Paciente' : '📱 Enviar Enlace al Paciente')
+                  }
                 </button>
               </div>
             )}
@@ -5016,14 +5158,109 @@ export default function HomePage() {
 
       {/* Contact Page */}
       {currentPage === 'contact' && (
-        <div style={{ padding: '3rem 1rem', minHeight: 'calc(100vh - 4rem)' }}>
-          <div style={{ maxWidth: '56rem', margin: '0 auto', backgroundColor: '#FFF8EE', borderRadius: '0.5rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', padding: '2rem' }}>
-            <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#112F33', marginBottom: '1.5rem' }}>
-              Contáctanos
-            </h1>
-            <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-              Email: soporte@mindhub.cloud
-            </p>
+        <div style={{ backgroundColor: '#f8fafc', minHeight: 'calc(100vh - 4rem)', padding: '2rem 1rem' }}>
+          <div style={{ maxWidth: '60rem', margin: '0 auto' }}>
+            <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', marginBottom: '2rem' }}>
+              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <img 
+                    src="/LogoPrincipal.svg" 
+                    alt="MindHub Logo" 
+                    style={{ width: '80px', height: 'auto', margin: '0 auto' }}
+                  />
+                </div>
+                <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#112F33', marginBottom: '1rem' }}>
+                  Contáctanos
+                </h1>
+                <div style={{ backgroundColor: '#e0f2fe', border: '1px solid #81d4fa', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+                  <p style={{ margin: 0, color: '#01579b', fontSize: '0.9rem', lineHeight: '1.5', textAlign: 'left' }}>
+                    <strong>¡Hola!</strong><br/>
+                    En MindHub valoramos tu comunicación. Ya sea que tengas preguntas, sugerencias o simplemente quieras conocer más sobre nuestros servicios, estamos aquí para ayudarte. Completa el formulario y nos pondremos en contacto contigo pronto.
+                  </p>
+                </div>
+                <div style={{ backgroundColor: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '1rem' }}>
+                  <p style={{ margin: 0, color: '#92400e', fontSize: '0.9rem', lineHeight: '1.5', textAlign: 'center' }}>
+                    📧 <strong>Email directo:</strong> soporte@mindhub.cloud
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={handleContactSubmit}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                      Nombre Completo *
+                    </label>
+                    <input 
+                      type="text"
+                      value={contactForm.name}
+                      onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                      placeholder="Tu nombre completo..."
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', outline: 'none' }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                      Email *
+                    </label>
+                    <input 
+                      type="email"
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                      placeholder="tu@email.com"
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', outline: 'none' }}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Lugar de Origen *
+                  </label>
+                  <input 
+                    type="text"
+                    value={contactForm.location}
+                    onChange={(e) => setContactForm({...contactForm, location: e.target.value})}
+                    placeholder="Ciudad, País..."
+                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', outline: 'none' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ marginBottom: '2rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
+                    Mensaje *
+                  </label>
+                  <textarea 
+                    value={contactForm.message}
+                    onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                    placeholder="Escribe tu mensaje aquí. Cuéntanos cómo podemos ayudarte, qué te interesa de MindHub, o cualquier consulta que tengas..."
+                    rows="6"
+                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', fontSize: '1rem', outline: 'none', resize: 'vertical' }}
+                    required
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage('dashboard')}
+                    style={{ padding: '0.75rem 1.5rem', backgroundColor: '#6b7280', color: 'white', border: 'none', borderRadius: '0.375rem', fontSize: '1rem', cursor: 'pointer' }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    style={{ padding: '0.75rem 2rem', backgroundColor: '#29A98C', color: 'white', border: 'none', borderRadius: '0.375rem', fontSize: '1rem', cursor: 'pointer', fontWeight: '600' }}
+                  >
+                    📨 Enviar Mensaje
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
@@ -5035,11 +5272,7 @@ export default function HomePage() {
             <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', marginBottom: '2rem' }}>
               <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                 <div style={{ marginBottom: '1rem' }}>
-                  <img 
-                    src="/LogoPrincipal.svg" 
-                    alt="MindHub Logo" 
-                    style={{ width: '80px', height: 'auto', margin: '0 auto' }}
-                  />
+                  <SvgIcon name="bot-training-svgrepo-com" size="80px" />
                 </div>
                 <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#112F33', marginBottom: '1rem' }}>
                   Beta Feedback
@@ -5148,7 +5381,7 @@ export default function HomePage() {
                       fontWeight: '600'
                     }}
                   >
-                    📨 Enviar Feedback
+                    <SvgIcon name="logging-svgrepo-com" size="1rem" /> Enviar Feedback
                   </button>
                 </div>
               </form>
@@ -5415,7 +5648,7 @@ export default function HomePage() {
                               justifyContent: 'center',
                               marginRight: '0.875rem'
                             }}>
-                              <span style={{ fontSize: '1.25rem', color: 'white' }}>👤</span>
+                              <SvgIcon name="person-name-svgrepo-com" size="1.25rem" color="white" />
                             </div>
                             <div style={{ flex: 1 }}>
                               <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#112F33', margin: 0 }}>
@@ -5431,6 +5664,14 @@ export default function HomePage() {
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
                             {patient.birthDate && (
                               <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
+                                <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Fecha Nac.</span>
+                                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#112F33' }}>
+                                  {new Date(patient.birthDate).toLocaleDateString('es-ES')}
+                                </span>
+                              </div>
+                            )}
+                            {patient.birthDate && (
+                              <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
                                 <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Edad</span>
                                 <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#112F33' }}>
                                   {calculateAge(patient.birthDate)} años
@@ -5441,7 +5682,15 @@ export default function HomePage() {
                               <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
                                 <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Sexo</span>
                                 <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#112F33' }}>
-                                  {patient.gender}
+                                  {patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : patient.gender}
+                                </span>
+                              </div>
+                            )}
+                            {patient.email && (
+                              <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
+                                <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Email</span>
+                                <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#112F33', wordBreak: 'break-all' }}>
+                                  {patient.email}
                                 </span>
                               </div>
                             )}
@@ -5479,6 +5728,17 @@ export default function HomePage() {
                                 {scale}
                               </span>
                             ))}
+                            {/* Indicador de modalidad */}
+                            {patientEvaluations.some(e => e.applicationMode === 'local') && (
+                              <span style={{ backgroundColor: '#e0e7ff', color: '#4338ca', padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500' }}>
+                                📍 Presencial
+                              </span>
+                            )}
+                            {patientEvaluations.some(e => e.applicationMode === 'remote') && (
+                              <span style={{ backgroundColor: '#fce7f3', color: '#be185d', padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500' }}>
+                                🌐 Distancia
+                              </span>
+                            )}
                           </div>
 
                           {/* Botones de acción */}
@@ -6041,7 +6301,7 @@ export default function HomePage() {
                       justifyContent: 'center',
                       margin: '0 auto 1rem'
                     }}>
-                      <span style={{ fontSize: '2rem', color: 'white' }}>👤</span>
+                      <SvgIcon name="person-name-svgrepo-com" size="2rem" color="white" />
                     </div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#112F33', margin: 0 }}>
                       Nuevo Paciente
@@ -6248,11 +6508,11 @@ export default function HomePage() {
             
             {/* Modern Header Section */}
             <div style={{ 
-              backgroundColor: 'linear-gradient(135deg, #29A98C 0%, #112F33 100%)', 
+              background: 'linear-gradient(135deg, #29A98C 0%, #22875c 100%)', 
               borderRadius: '16px', 
               padding: '2rem', 
               marginBottom: '2rem',
-              color: 'white',
+              color: '#112F33',
               boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
@@ -6276,10 +6536,10 @@ export default function HomePage() {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <select style={{
                     padding: '0.75rem 1rem',
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    border: '1px solid rgba(17,47,51,0.2)',
                     borderRadius: '8px',
-                    color: 'white',
+                    color: '#112F33',
                     fontSize: '0.875rem',
                     cursor: 'pointer'
                   }}>
@@ -6289,10 +6549,10 @@ export default function HomePage() {
                   </select>
                   <button style={{
                     padding: '0.75rem 1.5rem',
-                    backgroundColor: 'rgba(255,255,255,0.15)',
-                    border: '1px solid rgba(255,255,255,0.3)',
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    border: '1px solid rgba(17,47,51,0.2)',
                     borderRadius: '8px',
-                    color: 'white',
+                    color: '#112F33',
                     cursor: 'pointer',
                     fontSize: '0.875rem',
                     fontWeight: '600',
@@ -6375,19 +6635,19 @@ export default function HomePage() {
                 position: 'relative',
                 overflow: 'hidden'
               }}>
-                <div style={{ position: 'absolute', top: 0, right: 0, width: '80px', height: '80px', background: 'linear-gradient(135deg, #f59e0b20, #f59e0b05)', borderRadius: '0 16px 0 80px' }}></div>
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '80px', height: '80px', background: 'linear-gradient(135deg, #29A98C20, #29A98C05)', borderRadius: '0 16px 0 80px' }}></div>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
                   <div style={{ 
                     width: '4rem', 
                     height: '4rem', 
-                    backgroundColor: '#FEF3C7', 
+                    backgroundColor: '#E8F5F1', 
                     borderRadius: '12px', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
                     marginRight: '1rem'
                   }}>
-                    <SvgIcon name="omni-supervisor" size="2rem" />
+                    <SvgIcon name="task-svgrepo-com" size="2rem" />
                   </div>
                   <div>
                     <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
@@ -6398,10 +6658,10 @@ export default function HomePage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <span style={{ 
-                    color: '#f59e0b', 
+                    color: '#29A98C', 
                     fontSize: '0.875rem', 
                     fontWeight: '600',
-                    backgroundColor: '#fef3c7',
+                    backgroundColor: '#E8F5F1',
                     padding: '0.25rem 0.75rem',
                     borderRadius: '20px'
                   }}>
@@ -6416,7 +6676,7 @@ export default function HomePage() {
                   fontSize: '0.875rem', 
                   color: '#64748b' 
                 }}>
-                  Promedio diario: <strong style={{ color: '#f59e0b' }}>18.1 evaluaciones</strong>
+                  Promedio diario: <strong style={{ color: '#29A98C' }}>18.1 evaluaciones</strong>
                 </div>
               </div>
 
@@ -6430,19 +6690,19 @@ export default function HomePage() {
                 position: 'relative',
                 overflow: 'hidden'
               }}>
-                <div style={{ position: 'absolute', top: 0, right: 0, width: '80px', height: '80px', background: 'linear-gradient(135deg, #3b82f620, #3b82f605)', borderRadius: '0 16px 0 80px' }}></div>
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '80px', height: '80px', background: 'linear-gradient(135deg, #EC736720, #EC736705)', borderRadius: '0 16px 0 80px' }}></div>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
                   <div style={{ 
                     width: '4rem', 
                     height: '4rem', 
-                    backgroundColor: '#DBEAFE', 
+                    backgroundColor: '#FFF8EE', 
                     borderRadius: '12px', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
                     marginRight: '1rem'
                   }}>
-                    <SvgIcon name="network-contract" size="2rem" />
+                    <SvgIcon name="product-request-svgrepo-com" size="2rem" />
                   </div>
                   <div>
                     <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
@@ -6453,10 +6713,10 @@ export default function HomePage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <span style={{ 
-                    color: '#3b82f6', 
+                    color: '#EC7367', 
                     fontSize: '0.875rem', 
                     fontWeight: '600',
-                    backgroundColor: '#dbeafe',
+                    backgroundColor: '#FFF8EE',
                     padding: '0.25rem 0.75rem',
                     borderRadius: '20px'
                   }}>
@@ -6471,7 +6731,7 @@ export default function HomePage() {
                   fontSize: '0.875rem', 
                   color: '#64748b' 
                 }}>
-                  <strong style={{ color: '#3b82f6' }}>73% tasa de respuesta</strong> promedio
+                  <strong style={{ color: '#EC7367' }}>73% tasa de respuesta</strong> promedio
                 </div>
               </div>
 
@@ -6490,14 +6750,14 @@ export default function HomePage() {
                   <div style={{ 
                     width: '4rem', 
                     height: '4rem', 
-                    backgroundColor: '#FEF2F2', 
+                    backgroundColor: '#FFF8EE', 
                     borderRadius: '12px', 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center',
                     marginRight: '1rem'
                   }}>
-                    <SvgIcon name="forecasts" size="2rem" />
+                    <SvgIcon name="operating-hours-svgrepo-com" size="2rem" />
                   </div>
                   <div>
                     <h3 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
@@ -6508,10 +6768,10 @@ export default function HomePage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <span style={{ 
-                    color: '#10b981', 
+                    color: '#29A98C', 
                     fontSize: '0.875rem', 
                     fontWeight: '600',
-                    backgroundColor: '#ecfdf5',
+                    backgroundColor: '#E8F5F1',
                     padding: '0.25rem 0.75rem',
                     borderRadius: '20px'
                   }}>
@@ -6526,7 +6786,7 @@ export default function HomePage() {
                   fontSize: '0.875rem', 
                   color: '#64748b' 
                 }}>
-                  <strong style={{ color: '#ec7367' }}>94.3% tasa de finalización</strong>
+                  <strong style={{ color: '#EC7367' }}>94.3% tasa de finalización</strong>
                 </div>
               </div>
             </div>
@@ -6543,7 +6803,7 @@ export default function HomePage() {
                 border: '1px solid #e5e7eb'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <SvgIcon name="metrics" size="1.5rem" />
+                  <SvgIcon name="opportunity-svgrepo-com" size="1.5rem" />
                   <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#112F33', margin: 0, marginLeft: '0.75rem' }}>
                     Escalas Top Performance
                   </h3>
@@ -6758,7 +7018,7 @@ export default function HomePage() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <SvgIcon name="forecasts" size="1.5rem" />
+                    <SvgIcon name="product-request-svgrepo-com" size="2rem" />
                     <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#112F33', margin: 0, marginLeft: '0.75rem' }}>
                       Actividad Reciente
                     </h3>
@@ -6784,28 +7044,28 @@ export default function HomePage() {
                       patient: 'María García', 
                       time: 'Hace 2 minutos', 
                       status: 'success',
-                      icon: 'omni-supervisor'
+                      icon: 'task-svgrepo-com'
                     },
                     { 
                       action: 'Nuevo paciente registrado', 
                       patient: 'Carlos Mendoza (28 años)', 
                       time: 'Hace 15 minutos', 
                       status: 'info',
-                      icon: 'team-member'
+                      icon: 'person-name-svgrepo-com'
                     },
                     { 
                       action: 'Escala GAD-7 enviada por email', 
                       patient: 'Ana López', 
                       time: 'Hace 1 hora', 
                       status: 'warning',
-                      icon: 'network-contract'
+                      icon: 'product-request-svgrepo-com'
                     },
                     { 
                       action: 'Beck-21 finalizada con resultados', 
                       patient: 'Pedro Ruiz', 
                       time: 'Hace 2 horas', 
                       status: 'success',
-                      icon: 'omni-supervisor'
+                      icon: 'task-svgrepo-com'
                     },
                     { 
                       action: 'Reporte mensual generado', 
@@ -6864,7 +7124,7 @@ export default function HomePage() {
                 border: '1px solid #e5e7eb'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <SvgIcon name="dashboard" size="1.5rem" />
+                  <SvgIcon name="calculated-insights-svgrepo-com" size="1.5rem" />
                   <h3 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#112F33', margin: 0, marginLeft: '0.75rem' }}>
                     Insights de Rendimiento
                   </h3>

@@ -8,9 +8,9 @@
 
 ## Arquitectura del proyecto
 - Framework: Next.js 15 con JavaScript (no TypeScript)
-- Estilos: CSS inline (Tailwind fue removido por problemas de compilación)
+- Estilos: Tailwind CSS v3.4.17 (funcionando correctamente)
 - Backend: Xano
-- Autenticación: Pendiente de implementar
+- Autenticación: Auth0 (hasta el deployment, de momento para revisión en local, no hay login)
 
 ## Colores de marca
 - Fondo principal: #FFF8EE
@@ -27,8 +27,8 @@
 ## Problemas conocidos y soluciones
 - **Problema**: Errores de permisos npm y instalación
   - **Solución**: Usar inline styles, evitar dependencias complejas
-- **Problema**: Tailwind CSS no compila
-  - **Solución**: Usar CSS inline para garantizar funcionamiento
+- **Problema resuelto**: ~~Tailwind CSS no compila~~
+  - **Solución**: Instalado Tailwind CSS v3.4.17 con configuración correcta (tailwind.config.js y postcss.config.js)
 - **Problema**: Servidor no responde
   - **Solución**: Reiniciar con `npm run dev`, usar código simplificado
 
@@ -37,7 +37,7 @@
 - **Email de soporte**: soporte@mindhub.cloud
 
 ## Escalas implementadas
-- **PHQ-9**: Patient Health Questionnaire-9 (Depresión) - Completamente funcional
+- **PHQ-9**: Patient Health Questionnaire-9 (Depresión) - Completamente funcional (Actualizado con evaluación de funcionalidad mediante barra de porcentaje 0-100%, opciones visuales con emojis)
 - **GADI**: Inventario de Ansiedad Generalizada - Completamente funcional  
 - **HARS**: Escala de Hamilton para la Ansiedad - Completamente funcional (Heteroaplicada)
 - **MOS Sleep**: Escala de Sueño MOS - Completamente funcional (6 subescalas, opciones dinámicas)
@@ -46,6 +46,9 @@
 - **CDI**: Cuestionario de Depresión Infantil - Completamente funcional (Niños/adolescentes 7-17 años, 2 subescalas, alertas críticas)
 - **AQ-Child**: Cociente de TEA Niño - Completamente funcional (Niños 4-11 años, 5 subescalas, respuestas visuales con colores y emojis)
 - **AQ-Adolescent**: Cociente de TEA Adolescente - Completamente funcional (Adolescentes 10-17 años, 5 subescalas, respuestas con emojis)
+- **IPDE**: Examen Internacional de los Trastornos de Personalidad - Completamente funcional (Adultos ≥18 años, 9 trastornos en 3 clusters, scoring inverso, alertas críticas)
+- **Salamanca**: Cuestionario Salamanca de Trastornos de la Personalidad - Completamente funcional (Adultos, 11 trastornos DSM-IV en 3 clusters, respuestas graduales únicas: Falso/A veces/Con frecuencia/Siempre)
+- **SSS-V**: Escala de Búsqueda de Sensaciones - Completamente funcional (Adolescentes y adultos, 3 subescalas específicas, respuestas SÍ/NO, contenido sensible: drogas, sexualidad, riesgo)
 
 ## Sistema genérico de escalas
 - **Arquitectura modular**: Sistema unificado con escalas separadas en archivos individuales
@@ -62,6 +65,9 @@
   ├── cdi.js (CDI con evaluación pediátrica y 2 subescalas)
   ├── aq-child.js (AQ-Child con respuestas visuales y 5 subescalas)
   ├── aq-adolescent.js (AQ-Adolescent con respuestas con emojis y 5 subescalas)
+  ├── ipde.js (IPDE con 9 trastornos de personalidad en 3 clusters y scoring inverso)
+  ├── salamanca.js (Salamanca con 11 trastornos DSM-IV en 3 clusters y respuestas graduales)
+  ├── sss-v.js (SSS-V con 3 subescalas de búsqueda de sensaciones y contenido sensible)
   └── ... (escalas futuras)
   ```
 - **Componentes**: Páginas genéricas que se adaptan según la configuración de cada escala
@@ -87,7 +93,7 @@
     - **Opciones dinámicas**: Diferentes opciones por pregunta según contexto
     - **Subescalas múltiples**: Cálculo automático de múltiples dimensiones
     - **Scoring complejo**: Fórmulas avanzadas con promedios y transformaciones
-    - **Barras de porcentaje**: Slider interactivo para evaluaciones generales (BLS-23)
+    - **Barras de porcentaje**: Slider interactivo para evaluaciones generales (BLS-23, PHQ-9 funcionalidad)
     - **Declaraciones múltiples**: Múltiples afirmaciones por ítem con scoring no lineal (Beck-21)
     - **Respuestas visuales**: Opciones con colores y emojis para facilitar comprensión (AQ-Child)
     - **Alertas críticas**: Detección automática de conductas de alto riesgo
@@ -116,3 +122,15 @@
 - **Mantenibilidad**: Cada escala es independiente y fácil de modificar
 - **Reutilización**: Funciones compartidas a través del sistema
 - **Organización**: Código limpio y bien estructurado para 50+ escalas
+
+## Indicaciones especificas de Alejandro para trabajar:
+1. Primero, analiza el problema, lee el código base para encontrar los archivos relevantes y escribe un plan en task/todo.md.
+2. El plan debe incluir una lista de tareas pendientes que puedas marcar a medida que las completes.
+3. Antes de empezar a trabajar, contáctame y verificaré el plan.
+4. Luego, empieza a trabajar en las tareas pendientes, marcándolas como completadas a medida que avanzas. 5. Por favor, en cada paso del proceso, simplemente dame una explicación detallada de los cambios que realizaste.
+6. Simplifica al máximo cada tarea y cambio de código que realices. Queremos evitar cambios masivos o complejos. Cada cambio debe afectar la menor cantidad de código posible. Todo se basa en la simplicidad.
+7. Finalmente, agrega una sección de revisión al archivo [todo.md]con un resumen de los cambios que realizaste y cualquier otra información relevante.
+
+## Indicación de seguridad:
+
+Revisa todo el código que acabas de escribir y asegúrate de que cumpla con las mejores prácticas de seguridad. Asegúrate de que no contenga información confidencial ni vulnerabilidades que puedan explotarse.
