@@ -16,7 +16,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-semibold text-primary-600 mb-4">Características Principales</h2>
             <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div className="bg-primary-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-primary-700 mb-2">21+ Escalas Validadas</h3>
+                <h3 className="font-semibold text-primary-700 mb-2">26+ Escalas Validadas</h3>
                 <p className="text-sm text-gray-600">
                   Amplia biblioteca de escalas clinimétricas estandarizadas para uso de profesionales de la salud mental validadas científicamente
                 </p>
@@ -41,60 +41,71 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <h2 className="text-2xl font-semibold text-primary-600 mb-4">Escalas Disponibles</h2>
+            <h2 className="text-2xl font-semibold text-primary-600 mb-4">Escalas por Categorías Clínicas</h2>
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <h4 className="font-medium mb-2">Escalas de Depresión:</h4>
+                  <h4 className="font-medium mb-2 text-blue-700">Trastornos Afectivos:</h4>
                   <ul className="space-y-1 text-gray-600">
                     <li>• PHQ-9 - Cuestionario de Salud del Paciente-9</li>
                     <li>• Beck-21 - Inventario de Depresión de Beck</li>
                     <li>• Beck-13 - Inventario de Depresión de Beck (Versión Abreviada)</li>
                     <li>• CDI - Cuestionario de Depresión Infantil</li>
-                    <li>• EsADFUN - Escala de Síntomas Cognitivos en Depresión</li>
+                    <li>• EsADFUN - Escala de Autoevaluación para Depresión y Funcionalidad</li>
                     <li>• EPDS - Escala de Depresión Postnatal de Edimburgo</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Escalas de Ansiedad:</h4>
+                  <h4 className="font-medium mb-2 text-red-700">Trastornos de Ansiedad:</h4>
                   <ul className="space-y-1 text-gray-600">
                     <li>• GADI - Inventario de Ansiedad Generalizada</li>
                     <li>• HARS - Escala de Hamilton para la Ansiedad</li>
+                    <li>• STAI - Inventario de Ansiedad Estado-Rasgo</li>
                   </ul>
-                </div>
-                <div>
-                  <h4 className="font-medium mb-2">Escalas de Sueño:</h4>
+                  <h4 className="font-medium mb-2 mt-4 text-purple-700">Trastorno Bipolar:</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>• EMUN-AR - Auto-reporte para medición de síntomas maníacos</li>
+                  </ul>
+                  <h4 className="font-medium mb-2 mt-4 text-indigo-700">Trastornos del Sueño:</h4>
                   <ul className="space-y-1 text-gray-600">
                     <li>• MOS Sleep - Escala de Sueño MOS</li>
                   </ul>
                 </div>
-              </div>
-              <div className="grid md:grid-cols-3 gap-4 text-sm mt-4">
                 <div>
-                  <h4 className="font-medium mb-2">Escalas de Personalidad:</h4>
+                  <h4 className="font-medium mb-2 text-green-700">Trastornos de Personalidad:</h4>
                   <ul className="space-y-1 text-gray-600">
                     <li>• BLS-23 - Lista de Síntomas de Trastorno Límite</li>
                     <li>• IPDE - Examen Internacional de Trastornos de Personalidad</li>
                     <li>• Salamanca - Cuestionario Salamanca de Trastornos de Personalidad</li>
                   </ul>
                 </div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-4 text-sm mt-4">
                 <div>
-                  <h4 className="font-medium mb-2">Escalas de TEA:</h4>
+                  <h4 className="font-medium mb-2 text-cyan-700">Trastornos del Neurodesarrollo:</h4>
                   <ul className="space-y-1 text-gray-600">
                     <li>• AQ-Child - Cociente de TEA Niño (4-11 años)</li>
                     <li>• AQ-Adolescent - Cociente de TEA Adolescente (10-17 años)</li>
+                    <li>• TDAH-Adultos - Evaluación de TDAH en Adultos (DSM-5)</li>
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Escalas Especializadas:</h4>
+                  <h4 className="font-medium mb-2 text-pink-700">Trastornos de la Conducta Alimentaria:</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>• EAT-26 - Test de Actitudes hacia la Alimentación</li>
+                    <li>• EDI - Inventario de Trastornos de la Alimentación</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2 text-orange-700">Evaluaciones Especializadas:</h4>
                   <ul className="space-y-1 text-gray-600">
                     <li>• SSS-V - Escala de Búsqueda de Sensaciones</li>
                     <li>• AUDIT - Test de Identificación de Trastornos por Consumo de Alcohol</li>
-                    <li>• CTQ-SF - Cuestionario de Trauma Infantil</li>
+                    <li>• CTQ-SF - Cuestionario de Acontecimientos Traumáticos en la Infancia</li>
                     <li>• DTS - Escala de Trauma de Davidson</li>
-                    <li>• EAT-26 - Test de Actitudes hacia la Alimentación</li>
                     <li>• CPQ-A - Cuestionario de Problemas con Cannabis (Adolescentes)</li>
                     <li>• IIEF-15 - Índice Internacional de Función Eréctil</li>
+                    <li>• EI-Plutchik - Escala de Impulsividad de Plutchik</li>
                   </ul>
                 </div>
               </div>

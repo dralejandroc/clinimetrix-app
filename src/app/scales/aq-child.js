@@ -459,7 +459,7 @@ export const getAqChildDetailedInterpretation = (result) => {
     case 'Alto riesgo de TEA':
       interpretation = 'Puntuación superior al punto de corte que sugiere alta probabilidad de rasgos del espectro autista. Requiere evaluación diagnóstica especializada inmediata.'
       recommendations = [
-        'Evaluación diagnóstica especializada urgente',
+        'Evaluación diagnóstica especializada integral',
         'Evaluación multidisciplinaria (pediatría, neurología, psicología)',
         'Intervención temprana especializada',
         'Apoyo familiar e información sobre TEA',
@@ -539,25 +539,29 @@ export const checkAqChildClinicalAlerts = (responses = {}, result = {}) => {
     attention_switching: 30
   }
 
-  Object.entries(subscaleScores).forEach(([key, score]) => {
-    const maxScore = maxScores[key]
-    const percentage = (score / maxScore) * 100
-    
-    if (percentage >= 70) {
-      alerts.push({
-        type: 'warning',
-        title: `⚠️ ${subscaleNames[key]} Elevada`,
-        message: `Puntuación alta en ${subscaleNames[key]} (${score}/${maxScore}). Requiere evaluación específica de esta área del desarrollo.`,
-        priority: 'high'
-      })
-    }
-  })
+  if (subscaleScores && typeof subscaleScores === 'object') {
+    Object.entries(subscaleScores).forEach(([key, score]) => {
+      const maxScore = maxScores[key]
+      const percentage = (score / maxScore) * 100
+      
+      if (percentage >= 70) {
+        alerts.push({
+          type: 'warning',
+          title: `⚠️ ${subscaleNames[key]} Elevada`,
+          message: `Puntuación alta en ${subscaleNames[key]} (${score}/${maxScore}). Requiere evaluación específica de esta área del desarrollo.`,
+          priority: 'high'
+        })
+      }
+    })
+  }
 
   // Alerta por múltiples áreas problemáticas
-  const highScoreAreas = Object.entries(subscaleScores).filter(([key, score]) => {
-    const maxScore = maxScores[key]
-    return (score / maxScore) >= 0.66
-  }).length
+  const highScoreAreas = subscaleScores && typeof subscaleScores === 'object' 
+    ? Object.entries(subscaleScores).filter(([key, score]) => {
+        const maxScore = maxScores[key]
+        return (score / maxScore) >= 0.66
+      }).length 
+    : 0
 
   if (highScoreAreas >= 3) {
     alerts.push({

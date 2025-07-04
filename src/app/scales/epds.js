@@ -201,7 +201,7 @@ export function interpretEpdsScore(totalScore, subscaleScores) {
     ];
 
     recommendations = [
-      'Evaluación clínica urgente y evaluación psiquiátrica especializada',
+      'Evaluación clínica especializada inmediata',
       'Consideración de intervención terapéutica inmediata',
       'Evaluación del riesgo para la madre y el bebé',
       'Activación de red de apoyo familiar y profesional',
@@ -407,7 +407,7 @@ export const epdsHelpInfo = {
 
   followUp: [
     "Puntuaciones ≥10: Evaluación clínica estructurada recomendada",
-    "Puntuaciones ≥13: Evaluación psiquiátrica especializada urgente",
+    "Puntuaciones ≥13: Intervención clínica especializada inmediata",
     "Ítem 10 positivo: Evaluación inmediata del riesgo suicida",
     "Re-evaluación cada 2 semanas en casos límite",
     "Seguimiento continuo durante primer año postparto"

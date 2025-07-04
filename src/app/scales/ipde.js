@@ -496,7 +496,7 @@ export const checkIpdeClinicalAlerts = (responses = {}, result = {}) => {
     alerts.push({
       type: 'critical',
       title: '🚨 MÚLTIPLES TRASTORNOS ELEVADOS',
-      message: `Se detectaron ${highScoreDisorders.length} trastornos con puntuaciones ≥66%. Requiere evaluación psiquiátrica especializada urgente.`,
+      message: `Se detectaron ${highScoreDisorders.length} trastornos con puntuaciones ≥66%. Requiere intervención especializada inmediata y entrevista clínica estructurada.`,
       priority: 'urgent'
     })
   } else if (highScoreDisorders.length >= 1) {

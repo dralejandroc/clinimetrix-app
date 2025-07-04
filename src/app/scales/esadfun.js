@@ -56,11 +56,11 @@ export const esadfunQuestions = [
 
 // Opciones únicas para toda la escala (escala de frecuencia)
 export const esadfunOptions = [
-  { value: 0, label: 'Nunca en los últimos 7 días' },
-  { value: 1, label: 'Raramente (una o dos veces)' },
-  { value: 2, label: 'Algunas veces (3 a 5 veces)' },
-  { value: 3, label: 'Frecuente (alrededor de una vez al día)' },
-  { value: 4, label: 'Muy frecuente (más de una vez al día)' }
+  { value: 0, text: 'Nunca en los últimos 7 días', label: 'Nunca en los últimos 7 días' },
+  { value: 1, text: 'Raramente (una o dos veces)', label: 'Raramente (una o dos veces)' },
+  { value: 2, text: 'Algunas veces (3 a 5 veces)', label: 'Algunas veces (3 a 5 veces)' },
+  { value: 3, text: 'Frecuente (alrededor de una vez al día)', label: 'Frecuente (alrededor de una vez al día)' },
+  { value: 4, text: 'Muy frecuente (más de una vez al día)', label: 'Muy frecuente (más de una vez al día)' }
 ]
 
 export const calculateEsadfunScore = (responses = {}) => {
@@ -143,6 +143,7 @@ export const esadfunConfig = {
   type: 'autoaplicada',
   duration: '5',
   questions: esadfunQuestions,
+  options: esadfunOptions, // Agregado para compatibilidad con sistema genérico
   totalQuestions: 10,
   
   // Función para obtener opciones (iguales para todas las preguntas)
@@ -178,7 +179,7 @@ export const esadfunConfig = {
     } else if (result.riskLevel === 'moderate') {
       description = 'Afectación cognitiva moderada con impacto funcional significativo. Los síntomas cognitivos pueden interferir con actividades diarias, laborales y sociales.'
       recommendations = [
-        'Evaluación neuropsicológica comprehensiva urgente',
+        'Evaluación neuropsicológica comprehensiva inmediata',
         'Considerar intervenciones cognitivas específicas',
         'Optimización del tratamiento antidepresivo si existe',
         'Implementar adaptaciones funcionales en trabajo/estudio'
@@ -186,7 +187,7 @@ export const esadfunConfig = {
     } else {
       description = 'Afectación cognitiva severa que requiere atención clínica inmediata. El impacto funcional es sustancial y requiere intervención multidisciplinaria.'
       recommendations = [
-        'Evaluación neuropsicológica y psiquiátrica urgente',
+        'Evaluación neuropsicológica especializada inmediata',
         'Revisión inmediata del plan terapéutico completo',
         'Considerar evaluación multidisciplinaria especializada',
         'Implementar estrategias de rehabilitación cognitiva',
@@ -385,5 +386,27 @@ export const esadfunHelpInfo = {
     'Validación clínica internacional de EsADFUN en población con trastornos depresivos.',
     'Estudios de sensibilidad y especificidad en detección de síntomas cognitivos en depresión.',
     'Correlación con pruebas neuropsicológicas estándar en evaluación de función cognitiva.'
-  ]
+  ],
+  
+  // Funciones estándar para compatibilidad con sistema genérico
+  getInterpretation: function(responses) {
+    return this.getDetailedInterpretation(responses)
+  },
+  
+  checkAlerts: function(responses, result) {
+    return this.getAlerts(responses)
+  },
+  
+  // Configuración adicional para sistema genérico
+  timeEstimate: '5 minutos',
+  maxScore: 40,
+  scoreRange: '0-40',
+  instructions: [
+    'Por favor, responda basándose en cómo se ha sentido durante los últimos 7 días',
+    'No hay respuestas correctas o incorrectas',
+    'Responda de manera honesta y espontánea',
+    'Esta evaluación mide síntomas cognitivos relacionados con depresión'
+  ],
+  applicationType: 'Autoaplicada',
+  factors: null
 }

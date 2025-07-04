@@ -91,20 +91,20 @@ export const dtsQuestions = [
 
 // Opciones para frecuencia
 export const dtsFrequencyOptions = [
-  { value: 0, label: 'Nunca' },
-  { value: 1, label: 'A veces' },
-  { value: 2, label: '2-3 veces' },
-  { value: 3, label: '4 a 6 veces' },
-  { value: 4, label: 'A diario' }
+  { value: 0, text: 'Nunca', label: 'Nunca' },
+  { value: 1, text: 'A veces', label: 'A veces' },
+  { value: 2, text: '2-3 veces', label: '2-3 veces' },
+  { value: 3, text: '4 a 6 veces', label: '4 a 6 veces' },
+  { value: 4, text: 'A diario', label: 'A diario' }
 ]
 
 // Opciones para gravedad
 export const dtsSeverityOptions = [
-  { value: 0, label: 'Nada' },
-  { value: 1, label: 'Leve' },
-  { value: 2, label: 'Moderado' },
-  { value: 3, label: 'Marcado' },
-  { value: 4, label: 'Extrema' }
+  { value: 0, text: 'Nada', label: 'Nada' },
+  { value: 1, text: 'Leve', label: 'Leve' },
+  { value: 2, text: 'Moderado', label: 'Moderado' },
+  { value: 3, text: 'Marcado', label: 'Marcado' },
+  { value: 4, text: 'Extrema', label: 'Extrema' }
 ]
 
 // Clusters según DSM-IV
@@ -210,6 +210,7 @@ export const dtsConfig = {
   type: 'autoaplicada',
   duration: '10-15',
   questions: dtsQuestions,
+  options: dtsFrequencyOptions, // Opciones por defecto para compatibilidad con sistema genérico
   totalQuestions: 17,
   
   // Función especial para obtener opciones (dual response)
@@ -477,5 +478,31 @@ export const dtsHelpInfo = {
     'Davidson, J.R.T., et al. (1997). Assessment of a new self-rating scale for post-traumatic stress disorder. Psychological Medicine, 27(1), 153-160.',
     'Davidson, J.R.T. (2002). Davidson Trauma Scale (DTS) Manual. Multi-Health Systems Inc.',
     'Villafañe, A., et al. (2003). Validación de la Escala de Trauma de Davidson en población española. Actas Españolas de Psiquiatría, 31(4), 191-196.'
-  ]
+  ],
+  
+  // Funciones estándar para compatibilidad con sistema genérico
+  getInterpretation: function(responses) {
+    return this.getDetailedInterpretation(responses)
+  },
+  
+  checkAlerts: function(responses, result) {
+    return this.getAlerts(responses)
+  },
+  
+  // Configuración adicional para sistema genérico
+  timeEstimate: '10-15 minutos',
+  maxScore: 136,
+  scoreRange: '0-136',
+  instructions: [
+    'Por favor, responda basándose en síntomas que ha experimentado durante la última semana',
+    'Para cada síntoma, indique tanto la FRECUENCIA como la GRAVEDAD',
+    'No hay respuestas correctas o incorrectas',
+    'Sea honesto en sus respuestas'
+  ],
+  applicationType: 'Autoaplicada',
+  factors: {
+    intrusion: { name: 'Reexperimentación', maxScore: 34 },
+    avoidance: { name: 'Evitación/Embotamiento', maxScore: 68 },
+    hyperarousal: { name: 'Hiperactivación', maxScore: 34 }
+  }
 }

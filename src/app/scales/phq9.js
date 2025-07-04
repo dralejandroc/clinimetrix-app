@@ -134,8 +134,8 @@ export const getPhq9DetailedInterpretation = (result) => {
     return {
       level: 'moderate',
       title: 'Sintomatología Depresiva Moderada',
-      description: `Síntomas depresivos moderados que requieren intervención clínica activa. Impacto funcional: ${functionalImpairment}%. Se recomienda evaluación psiquiátrica y consideración de tratamiento psicoterapéutico y/o farmacológico.`,
-      recommendations: 'Evaluación psiquiátrica prioritaria, inicio de psicoterapia estructurada, seguimiento clínico semanal, y rehabilitación funcional si es necesaria.',
+      description: `Síntomas depresivos moderados que requieren intervención clínica activa. Impacto funcional: ${functionalImpairment}%. Se recomienda consideración de tratamiento psicoterapéutico y/o farmacológico.`,
+      recommendations: 'Inicio de psicoterapia estructurada, consideración de tratamiento farmacológico, seguimiento clínico semanal, y rehabilitación funcional si es necesaria.',
       className: 'level-moderate',
       color: '#ed8936'
     }
@@ -143,8 +143,8 @@ export const getPhq9DetailedInterpretation = (result) => {
     return {
       level: 'moderate-severe',
       title: 'Sintomatología Depresiva Moderada-Severa',
-      description: `Síntomas depresivos moderados a severos que requieren intervención inmediata. Impacto funcional: ${functionalImpairment}%. Se recomienda evaluación psiquiátrica urgente y consideración de tratamiento combinado.`,
-      recommendations: 'Evaluación psiquiátrica urgente, tratamiento farmacológico y psicoterapéutico combinado, seguimiento estrecho, y plan de rehabilitación funcional.',
+      description: `Síntomas depresivos moderados a severos que requieren intervención inmediata. Impacto funcional: ${functionalImpairment}%. Se recomienda consideración de tratamiento combinado.`,
+      recommendations: 'Tratamiento farmacológico y psicoterapéutico combinado, intervención intensiva, seguimiento estrecho, y plan de rehabilitación funcional.',
       className: 'level-severe',
       color: '#f56565'
     }
@@ -153,7 +153,7 @@ export const getPhq9DetailedInterpretation = (result) => {
       level: 'severe',
       title: 'Sintomatología Depresiva Severa',
       description: `Síntomas depresivos severos que requieren atención clínica inmediata y manejo especializado. Impacto funcional: ${functionalImpairment}%. Alto riesgo de deterioro funcional significativo.`,
-      recommendations: 'Evaluación psiquiátrica inmediata, hospitalización si es necesario, tratamiento intensivo combinado, seguimiento diario, y rehabilitación funcional integral.',
+      recommendations: 'Tratamiento intensivo combinado, consideración de hospitalización si es necesario, seguimiento diario, y rehabilitación funcional integral.',
       className: 'level-severe',
       color: '#f56565'
     }
@@ -199,7 +199,7 @@ export const getPhq9SeverityLevel = (score) => {
       level: 'mild',
       title: 'Sintomatología Depresiva Leve',
       description: 'Presencia de síntomas depresivos leves que pueden requerir vigilancia clínica.',
-      recommendations: 'Evaluación psicológica, técnicas de manejo del estrés, y seguimiento clínico en 2-4 semanas.',
+      recommendations: 'Técnicas de manejo del estrés, intervención psicológica, y seguimiento clínico en 2-4 semanas.',
       className: 'level-mild',
       color: '#f6ad55'
     }
@@ -208,7 +208,7 @@ export const getPhq9SeverityLevel = (score) => {
       level: 'moderate',
       title: 'Sintomatología Depresiva Moderada',
       description: 'Síntomas depresivos moderados que requieren intervención clínica activa.',
-      recommendations: 'Evaluación psiquiátrica prioritaria, inicio de psicoterapia estructurada, y seguimiento clínico semanal.',
+      recommendations: 'Inicio de psicoterapia estructurada, consideración de tratamiento farmacológico, y seguimiento clínico semanal.',
       className: 'level-moderate',
       color: '#ed8936'
     }
@@ -217,7 +217,7 @@ export const getPhq9SeverityLevel = (score) => {
       level: 'moderate-severe',
       title: 'Sintomatología Depresiva Moderada-Severa',
       description: 'Síntomas depresivos moderados a severos que requieren intervención inmediata.',
-      recommendations: 'Evaluación psiquiátrica urgente, tratamiento farmacológico y psicoterapéutico combinado, y seguimiento estrecho.',
+      recommendations: 'Tratamiento farmacológico y psicoterapéutico combinado, intervención intensiva, y seguimiento estrecho.',
       className: 'level-severe',
       color: '#f56565'
     }
@@ -226,7 +226,7 @@ export const getPhq9SeverityLevel = (score) => {
       level: 'severe',
       title: 'Sintomatología Depresiva Severa',
       description: 'Síntomas depresivos severos que requieren atención clínica inmediata y manejo especializado.',
-      recommendations: 'Evaluación psiquiátrica inmediata, hospitalización si es necesario, tratamiento intensivo combinado, y seguimiento diario.',
+      recommendations: 'Tratamiento intensivo combinado, consideración de hospitalización si es necesario, y seguimiento diario.',
       className: 'level-severe',
       color: '#f56565'
     }

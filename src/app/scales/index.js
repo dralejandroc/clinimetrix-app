@@ -128,6 +128,36 @@ import {
   iief15HelpInfo
 } from './iief-15.js'
 
+import {
+  ediConfig,
+  ediScaleData,
+  ediHelpInfo
+} from './edi.js'
+
+import {
+  emunArConfig,
+  emunArScaleData,
+  emunArHelpInfo
+} from './emun-ar.js'
+
+import {
+  plutchikEiConfig,
+  plutchikEiScaleData,
+  plutchikEiHelpInfo
+} from './plutchik-ei.js'
+
+import {
+  staiConfig,
+  staiScaleData,
+  staiHelpInfo
+} from './stai.js'
+
+import {
+  tdahConfig,
+  tdahScaleData,
+  tdahHelpInfo
+} from './tdah.js'
+
 // Configuraciones de escalas consolidadas
 export const scaleConfigs = {
   phq9: phq9Config,
@@ -150,7 +180,12 @@ export const scaleConfigs = {
   'eat-26': eat26Config,
   'cpq-a': cpqAConfig,
   epds: epdsConfig,
-  'iief-15': iief15Config
+  'iief-15': iief15Config,
+  edi: ediConfig,
+  'emun-ar': emunArConfig,
+  'plutchik-ei': plutchikEiConfig,
+  stai: staiConfig,
+  tdah: tdahConfig
 }
 
 // Datos del catálogo de escalas consolidados
@@ -176,22 +211,12 @@ export const scalesData = [
   cpqAScaleData,
   epdsScaleData,
   iief15ScaleData,
+  ediScaleData,
+  emunArScaleData,
+  plutchikEiScaleData,
+  staiScaleData,
+  tdahScaleData,
   // Escalas no implementadas (mantenidas para compatibilidad)
-  {
-    id: 'beck21',
-    fullName: 'Inventario de Depresión de Beck-II',
-    shortName: 'Beck-21',
-    description: 'Inventario de autoevaluación que mide la intensidad de síntomas depresivos basado en criterios del DSM-IV.',
-    questions: 21,
-    duration: '5-10',
-    applicationType: 'Autoaplicada',
-    ageRange: 'Adolescentes y adultos',
-    diagnostics: ['Depresión'],
-    tags: ['Depresión', 'Evaluación', 'DSM-IV'],
-    available: false,
-    icon: 'picklist-type-svgrepo-com',
-    color: '#3b82f6'
-  },
   {
     id: 'gad7',
     fullName: 'Trastorno de Ansiedad Generalizada-7',
@@ -277,6 +302,11 @@ export const scalesHelpInfo = {
   'cpq-a': cpqAHelpInfo,
   epds: epdsHelpInfo,
   'iief-15': iief15HelpInfo,
+  edi: ediHelpInfo,
+  'emun-ar': emunArHelpInfo,
+  'plutchik-ei': plutchikEiHelpInfo,
+  stai: staiHelpInfo,
+  tdah: tdahHelpInfo,
   // Información de escalas no implementadas (mantenida para compatibilidad)
   beck21: {
     purpose: "El BDI-II evalúa la severidad de síntomas depresivos en las últimas dos semanas, basado en criterios del DSM-IV.",
@@ -443,3 +473,8 @@ export * from './eat-26.js'
 export * from './cpq-a.js'
 export * from './epds.js'
 export * from './iief-15.js'
+export * from './edi.js'
+export * from './emun-ar.js'
+export * from './plutchik-ei.js'
+export * from './stai.js'
+export * from './tdah.js'

@@ -146,11 +146,11 @@ export const ctqSfQuestions = [
 
 // Opciones para todas las preguntas (escala Likert 1-5)
 export const ctqSfOptions = [
-  { value: 1, label: 'Nunca' },
-  { value: 2, label: 'Pocas veces' },
-  { value: 3, label: 'A veces' },
-  { value: 4, label: 'Muchas veces' },
-  { value: 5, label: 'Siempre' }
+  { value: 1, text: 'Nunca', label: 'Nunca' },
+  { value: 2, text: 'Pocas veces', label: 'Pocas veces' },
+  { value: 3, text: 'A veces', label: 'A veces' },
+  { value: 4, text: 'Muchas veces', label: 'Muchas veces' },
+  { value: 5, text: 'Siempre', label: 'Siempre' }
 ]
 
 // Configuración de subescalas
@@ -306,6 +306,7 @@ export const ctqSfConfig = {
   type: 'autoaplicada',
   duration: '5-7',
   questions: ctqSfQuestions,
+  options: ctqSfOptions, // Agregado para compatibilidad con sistema genérico
   totalQuestions: 28,
   
   // Función para obtener opciones (iguales para todas las preguntas)
@@ -580,5 +581,33 @@ export const ctqSfHelpInfo = {
     'Bernstein, D.P., & Fink, L. (1998). Childhood Trauma Questionnaire: A retrospective self-report manual. San Antonio, TX: The Psychological Corporation.',
     'Bernstein, D.P., et al. (2003). Development and validation of a brief screening version of the Childhood Trauma Questionnaire. Child Abuse & Neglect, 27(2), 169-190.',
     'Spinhoven, P., et al. (2014). Childhood Trauma Questionnaire: Factor structure, measurement invariance, and validity across emotional disorders. Psychological Assessment, 26(3), 717-729.'
-  ]
+  ],
+  
+  // Funciones estándar para compatibilidad con sistema genérico
+  getInterpretation: function(responses) {
+    return this.getDetailedInterpretation(responses)
+  },
+  
+  checkAlerts: function(responses, result) {
+    return this.getAlerts(responses)
+  },
+  
+  // Configuración adicional para sistema genérico
+  timeEstimate: '5-7 minutos',
+  maxScore: 125,
+  scoreRange: '25-125',
+  instructions: [
+    'Por favor, responda basándose en experiencias de su infancia y adolescencia',
+    'No hay respuestas correctas o incorrectas',
+    'Sea honesto en sus respuestas, la información es confidencial',
+    'Si necesita apoyo, recuerde que hay profesionales disponibles para ayudarle'
+  ],
+  applicationType: 'Autoaplicada',
+  factors: {
+    emotional_abuse: { name: 'Abuso Emocional', maxScore: 25 },
+    physical_abuse: { name: 'Abuso Físico', maxScore: 25 },
+    sexual_abuse: { name: 'Abuso Sexual', maxScore: 25 },
+    emotional_neglect: { name: 'Negligencia Emocional', maxScore: 25 },
+    physical_neglect: { name: 'Negligencia Física', maxScore: 25 }
+  }
 }

@@ -47,51 +47,51 @@ export const auditQuestions = [
 
 // Opciones estándar para preguntas 1-8
 export const auditOptionsStandard = [
-  { value: 0, label: 'Nunca' },
-  { value: 1, label: 'Menos de una vez al mes' },
-  { value: 2, label: 'Mensualmente' },
-  { value: 3, label: 'Semanalmente' },
-  { value: 4, label: 'A diario o casi a diario' }
+  { value: 0, text: 'Nunca', label: 'Nunca' },
+  { value: 1, text: 'Menos de una vez al mes', label: 'Menos de una vez al mes' },
+  { value: 2, text: 'Mensualmente', label: 'Mensualmente' },
+  { value: 3, text: 'Semanalmente', label: 'Semanalmente' },
+  { value: 4, text: 'A diario o casi a diario', label: 'A diario o casi a diario' }
 ]
 
 // Opciones específicas por pregunta
 export const auditOptionsSpecial = {
   // Pregunta 1: Frecuencia de consumo
   1: [
-    { value: 0, label: 'Nunca' },
-    { value: 1, label: 'Una o menos veces al mes' },
-    { value: 2, label: 'De 2 a 4 veces al mes' },
-    { value: 3, label: 'De 2 a 3 veces a la semana' },
-    { value: 4, label: 'Cuatro o más veces a la semana' }
+    { value: 0, text: 'Nunca', label: 'Nunca' },
+    { value: 1, text: 'Una o menos veces al mes', label: 'Una o menos veces al mes' },
+    { value: 2, text: 'De 2 a 4 veces al mes', label: 'De 2 a 4 veces al mes' },
+    { value: 3, text: 'De 2 a 3 veces a la semana', label: 'De 2 a 3 veces a la semana' },
+    { value: 4, text: 'Cuatro o más veces a la semana', label: 'Cuatro o más veces a la semana' }
   ],
   // Pregunta 2: Cantidad por día
   2: [
-    { value: 0, label: '1 o 2' },
-    { value: 1, label: '3 o 4' },
-    { value: 2, label: '5 o 6' },
-    { value: 3, label: 'De 7 a 9' },
-    { value: 4, label: '10 o más' }
+    { value: 0, text: '1 o 2', label: '1 o 2' },
+    { value: 1, text: '3 o 4', label: '3 o 4' },
+    { value: 2, text: '5 o 6', label: '5 o 6' },
+    { value: 3, text: 'De 7 a 9', label: 'De 7 a 9' },
+    { value: 4, text: '10 o más', label: '10 o más' }
   ],
   // Pregunta 3: Binge drinking
   3: [
-    { value: 0, label: 'Nunca' },
-    { value: 1, label: 'Menos de una vez al mes' },
-    { value: 2, label: 'Mensualmente' },
-    { value: 3, label: 'Semanalmente' },
-    { value: 4, label: 'A diario o casi a diario' }
+    { value: 0, text: 'Nunca', label: 'Nunca' },
+    { value: 1, text: 'Menos de una vez al mes', label: 'Menos de una vez al mes' },
+    { value: 2, text: 'Mensualmente', label: 'Mensualmente' },
+    { value: 3, text: 'Semanalmente', label: 'Semanalmente' },
+    { value: 4, text: 'A diario o casi a diario', label: 'A diario o casi a diario' }
   ],
   // Preguntas 4-8: Usar opciones estándar
   // Pregunta 9: Lesiones
   9: [
-    { value: 0, label: 'No' },
-    { value: 2, label: 'Sí, pero no en el curso del último año' },
-    { value: 4, label: 'Sí, el último año' }
+    { value: 0, text: 'No', label: 'No' },
+    { value: 2, text: 'Sí, pero no en el curso del último año', label: 'Sí, pero no en el curso del último año' },
+    { value: 4, text: 'Sí, el último año', label: 'Sí, el último año' }
   ],
   // Pregunta 10: Preocupación social
   10: [
-    { value: 0, label: 'No' },
-    { value: 2, label: 'Sí, pero no en el curso del último año' },
-    { value: 4, label: 'Sí, el último año' }
+    { value: 0, text: 'No', label: 'No' },
+    { value: 2, text: 'Sí, pero no en el curso del último año', label: 'Sí, pero no en el curso del último año' },
+    { value: 4, text: 'Sí, el último año', label: 'Sí, el último año' }
   ]
 }
 
@@ -191,6 +191,7 @@ export const auditConfig = {
   type: 'autoaplicada',
   duration: '3-5',
   questions: auditQuestions,
+  options: auditOptionsStandard, // Opciones por defecto para compatibilidad con sistema genérico
   totalQuestions: 10,
   
   // Función para obtener opciones por pregunta
@@ -387,5 +388,32 @@ export const auditHelpInfo = {
     'Saunders, J.B., et al. (1993). Development of the Alcohol Use Disorders Identification Test (AUDIT). Addiction, 88(6), 791-804.',
     'World Health Organization. (2001). AUDIT: The Alcohol Use Disorders Identification Test. Guidelines for use in primary care.',
     'Reinert, D.F., & Allen, J.P. (2007). The alcohol use disorders identification test: An update of research findings. Alcoholism: Clinical and Experimental Research, 31(2), 185-199.'
-  ]
+  ],
+  
+  // Funciones estándar para compatibilidad con sistema genérico
+  getInterpretation: function(responses) {
+    return this.getDetailedInterpretation(responses)
+  },
+  
+  checkAlerts: function(responses, result) {
+    return this.getAlerts(responses)
+  },
+  
+  // Configuración adicional para sistema genérico
+  timeEstimate: '3-5 minutos',
+  maxScore: 40,
+  scoreRange: '0-40',
+  instructions: [
+    'Por favor, responda todas las preguntas sobre su consumo de alcohol',
+    'Sea honesto en sus respuestas, la información es confidencial',
+    'No hay respuestas correctas o incorrectas',
+    'Las preguntas se refieren principalmente al último año'
+  ],
+  applicationType: 'Autoaplicada',
+  factors: {
+    consumption: { name: 'Consumo de Alcohol', maxScore: 12 },
+    dependence: { name: 'Dependencia', maxScore: 12 },
+    psychological: { name: 'Problemas Psicológicos', maxScore: 8 },
+    social: { name: 'Problemas Sociales', maxScore: 8 }
+  }
 }

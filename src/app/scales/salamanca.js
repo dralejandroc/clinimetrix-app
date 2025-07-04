@@ -267,7 +267,7 @@ export const getSalamancaDetailedInterpretation = (result) => {
     level = 'high'
     title = 'Alertas Clínicas Prioritarias'
     description = `Se detectaron puntuaciones muy elevadas (≥4/6) en: ${highScores.join(', ')}. Estos patrones requieren evaluación clínica detallada inmediata.`
-    recommendations = 'Evaluación psiquiátrica especializada urgente; Entrevista diagnóstica estructurada (IPDE o SCID-II); Valoración de impacto funcional y necesidad de tratamiento.'
+    recommendations = 'Entrevista diagnóstica estructurada (IPDE o SCID-II); Valoración de impacto funcional y necesidad de tratamiento; Consideración de psicoterapia especializada (TDC, Mentalización).'
   } else if (moderateScores.length > 0) {
     level = 'moderate'
     title = 'Indicadores de Evaluación Adicional'

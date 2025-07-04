@@ -182,7 +182,7 @@ export const getBls23DetailedInterpretation = (result) => {
       interpretation = 'El paciente presenta sintomatología límite severa con impacto significativo en múltiples áreas de funcionamiento. Se observan síntomas afectivos intensos y conductas de alto riesgo que requieren intervención inmediata y manejo intensivo. Evaluación urgente de riesgo suicida y autolesivo requerida.'
       recommendations = [
         'Intervención terapéutica intensiva inmediata (TDC intensiva o similar)',
-        'Evaluación psiquiátrica urgente para consideración de tratamiento farmacológico',
+        'Consideración inmediata de tratamiento farmacológico (estabilizadores del ánimo, antipsicóticos)',
         'Implementación de plan de seguridad y manejo de crisis',
         'Consideración de tratamiento residencial o parcial hospitalización'
       ]

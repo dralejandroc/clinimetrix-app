@@ -424,5 +424,15 @@ export const iief15HelpInfo = {
     "Repetir evaluación después de intervenciones terapéuticas para monitorear respuesta",
     "Interpretar resultados en contexto de expectativas y objetivos del paciente"
   ],
-  references: "Rosen RC, Riley A, Wagner G, et al. The international index of erectile function (IIEF): a multidimensional scale for assessment of erectile dysfunction. Urology. 1997;49(6):822-830."
+  references: "Rosen RC, Riley A, Wagner G, et al. The international index of erectile function (IIEF): a multidimensional scale for assessment of erectile dysfunction. Urology. 1997;49(6):822-830.",
+  
+  // Funciones estándar para compatibilidad con sistema genérico
+  getInterpretation: function(responses) {
+    const result = this.calculateScore(responses)
+    return this.getDetailedInterpretation ? this.getDetailedInterpretation(responses) : result
+  },
+  
+  checkAlerts: function(responses, result) {
+    return this.getAlerts ? this.getAlerts(result, result) : []
+  }
 };

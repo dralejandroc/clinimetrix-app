@@ -446,8 +446,8 @@ export const getAqAdolescentDetailedInterpretation = (result) => {
     case 'Elevado (≥30)':
       interpretation = 'Puntuación superior al punto de corte que indica alta probabilidad de rasgos del espectro autista clínicamente significativos. Requiere evaluación diagnóstica especializada integral.'
       recommendations = [
-        'Evaluación diagnóstica especializada urgente',
-        'Evaluación multidisciplinaria (neurología, psicología, psiquiatría)',
+        'Evaluación diagnóstica especializada integral',
+        'Evaluación multidisciplinaria (neurología, psicología, terapia ocupacional)',
         'Evaluación del funcionamiento adaptativo académico y social',
         'Considerar apoyo educativo especializado',
         'Apoyo familiar e información sobre TEA en adolescencia'
@@ -508,7 +508,7 @@ export const checkAqAdolescentClinicalAlerts = (responses = {}, result = {}) => 
   if (totalScore >= 30) {
     alerts.push({
       type: 'critical',
-      title: '🚨 PUNTUACIÓN ELEVADA - EVALUACIÓN URGENTE',
+      title: '🚨 PUNTUACIÓN ELEVADA - EVALUACIÓN ESPECIALIZADA',
       message: `Puntuación total de ${totalScore}/50 (≥30). El 90% de adolescentes con TEA puntúan en este rango. Se recomienda evaluación diagnóstica especializada inmediata.`,
       priority: 'urgent'
     })
@@ -530,19 +530,23 @@ export const checkAqAdolescentClinicalAlerts = (responses = {}, result = {}) => 
     imagination: "Imaginación"
   }
 
-  Object.entries(subscaleScores).forEach(([key, score]) => {
-    if (score >= 7) { // ≥70% del máximo
-      alerts.push({
-        type: 'warning',
-        title: `⚠️ ${subscaleNames[key]} Elevada`,
-        message: `Puntuación alta en ${subscaleNames[key]} (${score}/10). Requiere evaluación específica de esta área del desarrollo.`,
-        priority: 'high'
-      })
-    }
-  })
+  if (subscaleScores && typeof subscaleScores === 'object') {
+    Object.entries(subscaleScores).forEach(([key, score]) => {
+      if (score >= 7) { // ≥70% del máximo
+        alerts.push({
+          type: 'warning',
+          title: `⚠️ ${subscaleNames[key]} Elevada`,
+          message: `Puntuación alta en ${subscaleNames[key]} (${score}/10). Requiere evaluación específica de esta área del desarrollo.`,
+          priority: 'high'
+        })
+      }
+    })
+  }
 
   // Alerta por múltiples áreas problemáticas
-  const highScoreAreas = Object.entries(subscaleScores).filter(([key, score]) => score >= 7).length
+  const highScoreAreas = subscaleScores && typeof subscaleScores === 'object' 
+    ? Object.entries(subscaleScores).filter(([key, score]) => score >= 7).length 
+    : 0
 
   if (highScoreAreas >= 3) {
     alerts.push({

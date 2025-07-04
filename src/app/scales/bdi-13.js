@@ -149,10 +149,10 @@ export const bdi13Questions = [
 
 // Las opciones para cada pregunta son los valores 0, 1, 2, 3
 export const bdi13Options = [
-  { value: 0, label: 'Opción 1' },
-  { value: 1, label: 'Opción 2' },
-  { value: 2, label: 'Opción 3' },
-  { value: 3, label: 'Opción 4' }
+  { value: 0, text: 'Opción 1', label: 'Opción 1' },
+  { value: 1, text: 'Opción 2', label: 'Opción 2' },
+  { value: 2, text: 'Opción 3', label: 'Opción 3' },
+  { value: 3, text: 'Opción 4', label: 'Opción 4' }
 ]
 
 export const calculateBdi13Score = (responses = {}) => {
@@ -213,6 +213,7 @@ export const bdi13Config = {
   type: 'autoaplicada',
   duration: '3-5',
   questions: bdi13Questions,
+  options: bdi13Options, // Opciones por defecto para compatibilidad con sistema genérico
   totalQuestions: 13,
   
   // Función para obtener opciones (en este caso son las declaraciones de cada ítem)
@@ -222,6 +223,7 @@ export const bdi13Config = {
     
     return question.statements.map((statement, index) => ({
       value: index,
+      text: statement,
       label: statement
     }))
   },
@@ -262,7 +264,7 @@ export const bdi13Config = {
     } else {
       description = 'Sintomatología depresiva grave que interfiere severamente con el funcionamiento diario. Se requiere intervención inmediata y seguimiento especializado.'
       recommendations = [
-        'Evaluación psiquiátrica urgente',
+        'Intervención farmacológica inmediata (antidepresivos)',
         'Considerar hospitalización si hay riesgo suicida',
         'Tratamiento farmacológico y psicoterapéutico combinado',
         'Seguimiento estrecho y frecuente',
@@ -432,5 +434,27 @@ export const bdi13HelpInfo = {
     'Beck, A.T., & Steer, R.A. (1993). Beck Depression Inventory Manual. San Antonio, TX: Psychological Corporation.',
     'Beck, A.T., Steer, R.A., & Brown, G.K. (1996). Manual for the Beck Depression Inventory-II. San Antonio, TX: Psychological Corporation.',
     'Segal, D.L., et al. (2008). Diagnostic efficiency of the Beck Depression Inventory-II for older adult psychiatric outpatients. Assessment, 15(4), 531-541.'
-  ]
+  ],
+  
+  // Funciones estándar para compatibilidad con sistema genérico
+  getInterpretation: function(responses) {
+    return this.getDetailedInterpretation(responses)
+  },
+  
+  checkAlerts: function(responses, result) {
+    return this.getAlerts(responses)
+  },
+  
+  // Configuración adicional para sistema genérico
+  timeEstimate: '3-5 minutos',
+  maxScore: 39,
+  scoreRange: '0-39',
+  instructions: [
+    'Por favor, lea cuidadosamente cada grupo de afirmaciones',
+    'Seleccione la afirmación que mejor describe cómo se ha sentido durante las últimas dos semanas',
+    'No hay respuestas correctas o incorrectas',
+    'Sea honesto en sus respuestas'
+  ],
+  applicationType: 'Autoaplicada',
+  factors: null
 }

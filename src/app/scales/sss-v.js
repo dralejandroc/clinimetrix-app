@@ -246,11 +246,13 @@ export const getSssVDetailedInterpretation = (result) => {
   
   // Análisis específico de subescalas
   let subscaleAnalysis = []
-  Object.entries(subscaleScores).forEach(([key, data]) => {
-    if (data.percentage >= 66) {
-      subscaleAnalysis.push(`${data.shortName} elevada: ${data.explanation}`)
-    }
-  })
+  if (subscaleScores && typeof subscaleScores === 'object') {
+    Object.entries(subscaleScores).forEach(([key, data]) => {
+      if (data.percentage >= 66) {
+        subscaleAnalysis.push(`${data.shortName} elevada: ${data.explanation}`)
+      }
+    })
+  }
   
   return {
     level,

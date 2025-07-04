@@ -40,28 +40,30 @@ export const calculateGadiScore = (responses = {}) => {
   let somatic = 0
   let sleep = 0
 
+  // Calcular el total sumando todas las respuestas (ítems 1-22)
+  for (let i = 1; i <= 22; i++) {
+    total += responses[i] || 0
+  }
+
   // Factores cognitivos (ítems 1, 3, 8, 10, 17, 18, 19, 21, 22)
-  const cognitiveItems = [0, 2, 7, 9, 16, 17, 18, 20, 21]
+  const cognitiveItems = [1, 3, 8, 10, 17, 18, 19, 21, 22]
   cognitiveItems.forEach(i => {
     const score = responses[i] || 0
     cognitive += score
-    total += score
   })
 
   // Factores somáticos (ítems 2, 4, 7, 9, 11, 12, 13, 15, 16, 20, 22)
-  const somaticItems = [1, 3, 6, 8, 10, 11, 12, 14, 15, 19, 21]
+  const somaticItems = [2, 4, 7, 9, 11, 12, 13, 15, 16, 20, 22]
   somaticItems.forEach(i => {
     const score = responses[i] || 0
     somatic += score
-    total += score
   })
 
   // Factores de sueño (ítems 6, 14)
-  const sleepItems = [5, 13]
+  const sleepItems = [6, 14]
   sleepItems.forEach(i => {
     const score = responses[i] || 0
     sleep += score
-    total += score
   })
 
   return {
@@ -80,8 +82,8 @@ export const getGadiDetailedInterpretation = (result) => {
     return {
       level: 'severe',
       title: 'Ansiedad Generalizada Severa',
-      description: `Puntuación total: ${total}/88. La puntuación indica un nivel severo de sintomatología ansiosa que sugiere la presencia de un Trastorno de Ansiedad Generalizada clínicamente significativo. Se recomienda evaluación psiquiátrica urgente e intervención terapéutica inmediata.`,
-      recommendations: 'Evaluación psiquiátrica urgente, consideración de farmacoterapia e intervención psicoterapéutica inmediata. Monitoreo estrecho de síntomas.',
+      description: `Puntuación total: ${total}/88. La puntuación indica un nivel severo de sintomatología ansiosa que sugiere la presencia de un Trastorno de Ansiedad Generalizada clínicamente significativo. Se recomienda intervención terapéutica inmediata.`,
+      recommendations: 'Consideración de farmacoterapia ansiolítica e intervención psicoterapéutica inmediata (TCC, técnicas de relajación). Monitoreo estrecho de síntomas.',
       factorInterpretations: {
         cognitive: cognitive >= 22 ? 'Síntomas cognitivos severos: preocupación excesiva y dificultades para controlar la ansiedad prominentes.' : 'Síntomas cognitivos moderados.',
         somatic: somatic >= 26 ? 'Manifestaciones físicas severas: tensión muscular, síntomas autonómicos y fatiga significativos.' : 'Síntomas somáticos moderados.',
@@ -139,8 +141,8 @@ export const checkGadiClinicalAlerts = (responses = {}) => {
   const alerts = []
   const highThreshold = 3 // ≥75% del máximo (3 de 4)
   
-  // Revisar ítems específicos de alta preocupación
-  if (responses[9] && responses[9] >= highThreshold) { // Ítem 10: Temor a perder control
+  // Revisar ítems específicos de alta preocupación (usando índices 1-based)
+  if (responses[10] && responses[10] >= highThreshold) { // Ítem 10: Temor a perder control
     alerts.push({
       type: 'critical',
       title: '⚠️ ALERTA: Temor a Pérdida de Control',
@@ -149,7 +151,7 @@ export const checkGadiClinicalAlerts = (responses = {}) => {
     })
   }
   
-  if (responses[18] && responses[18] >= highThreshold) { // Ítem 19: Dificultad para controlar ansiedad
+  if (responses[19] && responses[19] >= highThreshold) { // Ítem 19: Dificultad para controlar ansiedad
     alerts.push({
       type: 'warning',
       title: '⚠️ Dificultad Severa de Control',
@@ -158,8 +160,8 @@ export const checkGadiClinicalAlerts = (responses = {}) => {
     })
   }
   
-  // Revisar síntomas somáticos severos
-  const severeSomaticSymptoms = [15, 7, 11, 12].filter(index => responses[index] && responses[index] >= highThreshold)
+  // Revisar síntomas somáticos severos (usando índices 1-based)
+  const severeSomaticSymptoms = [16, 8, 12, 13].filter(index => responses[index] && responses[index] >= highThreshold)
   if (severeSomaticSymptoms.length >= 2) {
     alerts.push({
       type: 'warning',
@@ -169,8 +171,8 @@ export const checkGadiClinicalAlerts = (responses = {}) => {
     })
   }
   
-  // Revisar alteraciones severas del sueño
-  if ((responses[5] && responses[5] >= highThreshold) || (responses[13] && responses[13] >= highThreshold)) {
+  // Revisar alteraciones severas del sueño (usando índices 1-based)
+  if ((responses[6] && responses[6] >= highThreshold) || (responses[14] && responses[14] >= highThreshold)) {
     alerts.push({
       type: 'warning',
       title: '⚠️ Alteraciones Severas del Sueño',

@@ -11,48 +11,38 @@ import {
   getAvailableScales
 } from './scales/index.js'
 
-// Componente para iconos SVG coloreados
+// Componente para iconos SVG coloreados - Temporalmente usando emojis para evitar errores
 const SvgIcon = ({ name, size = '1.2rem', color = 'currentColor' }) => {
-  const [imageError, setImageError] = useState(false)
-  const [imageSrc, setImageSrc] = useState(`/icons/${name}.svg`)
-  
-  // Fallback si no se encuentra el icono
-  const handleImageError = () => {
-    setImageError(true)
+  // Mapeo de nombres de iconos a emojis
+  const iconMap = {
+    'analyse-svgrepo-com': '📊',
+    'budget-allocation-svgrepo-com': '💰',
+    'contact-list-svgrepo-com': '👥',
+    'operating-hours-svgrepo-com': '⏰',
+    'opportunity-svgrepo-com': '⭐',
+    'product-request-svgrepo-com': '📋',
+    'task-svgrepo-com': '✅',
+    'report': '📄',
+    'medical-icon': '🏥',
+    'heart-circle-svgrepo-com': '❤️',
+    'leaf-svgrepo-com': '🌿',
+    'restaurant-svgrepo-com': '🍽️'
   }
   
-  if (imageError) {
-    return (
-      <span 
-        style={{ 
-          width: size, 
-          height: size, 
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#29A98C',
-          borderRadius: '4px',
-          fontSize: '0.8rem',
-          color: 'white',
-          fontWeight: 'bold'
-        }}
-      >
-        {name.substring(0, 2).toUpperCase()}
-      </span>
-    )
-  }
+  const emoji = iconMap[name] || '📋'
   
   return (
-    <img 
-      src={imageSrc}
-      alt={`${name} icon`}
-      onError={handleImageError}
+    <span 
       style={{ 
-        width: size, 
-        height: size, 
-        filter: color !== 'currentColor' ? `drop-shadow(0 0 0 ${color})` : 'none'
-      }} 
-    />
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: size,
+        lineHeight: 1
+      }}
+    >
+      {emoji}
+    </span>
   )
 }
 
@@ -109,7 +99,14 @@ export default function HomePage() {
     name: '',
     birthDate: '',
     gender: '',
+    email: '',
+    phone: '',
     diagnosis: '',
+    tags: [],
+    referringProfessional: '',
+    firstConsultDate: '',
+    emergencyContact: '',
+    emergencyPhone: '',
     notes: ''
   })
   const [showPatientForm, setShowPatientForm] = useState(false)
@@ -122,6 +119,8 @@ export default function HomePage() {
   const [showNewPatientModal, setShowNewPatientModal] = useState(false)
   const [patientSuggestions, setPatientSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [showScaleSelectionPopup, setShowScaleSelectionPopup] = useState(false)
+  const [scaleSelectionPatient, setScaleSelectionPatient] = useState(null)
 
   // Estados genéricos para escalas (reemplaza estados específicos)
   const [scaleResponses, setScaleResponses] = useState({})
@@ -247,22 +246,41 @@ export default function HomePage() {
     console.log('Evaluación guardada:', evaluationData)
   }
 
-  // Función genérica para iniciar cualquier escala
+  // Sistema genérico universal para iniciar cualquier escala
   const handleStartScale = (scaleId) => {
     const config = scaleConfigs[scaleId]
-    if (!config) return
     
+    // Debug y validación
+    console.log('Starting scale:', scaleId)
+    console.log('Config found:', config)
+    console.log('All available configs:', Object.keys(scaleConfigs))
+    
+    if (!config) {
+      console.error('Scale config not found for:', scaleId)
+      return
+    }
+    
+    if (!config.options || !Array.isArray(config.options)) {
+      console.error('Scale options not found or invalid for:', scaleId, config.options)
+      return
+    }
+    
+    // Configurar escala seleccionada
     setCurrentScale(scaleId)
     setCurrentScaleConfig(config)
     setScaleResponses({})
     setCurrentQuestionIndex(0)
-    setShowWelcome(true)
-    setShowProfessionalCard(true)
-    setShowPatientInstructions(false)
-    setShowCompletionCard(false)
-    setApplicationMode('')
-    setCurrentPatient('')
-    setCurrentPage('scale')
+    
+    // Resetear estados del flujo genérico
+    setApplicationMode('')           // Presencial vs Remoto
+    setCurrentPatient('')           // Paciente seleccionado
+    setShowWelcome(false)           // Tarjeta de bienvenida
+    setShowProfessionalCard(false)  // Tarjeta profesional
+    setShowPatientInstructions(false) // Instrucciones al paciente
+    setShowCompletionCard(false)    // Tarjeta de completado
+    
+    // Iniciar flujo genérico - Primera tarjeta: Modo de aplicación
+    setCurrentPage('application-mode')
   }
 
   // Funciones específicas para mantener compatibilidad
@@ -273,10 +291,12 @@ export default function HomePage() {
   const handleScaleResponse = (questionId, value) => {
     if (!currentScaleConfig) return
     
-    // Mantener el valor tal como viene, sin conversiones que puedan causar problemas
+    // Usar indexación 1-based para compatibilidad con todas las escalas
+    // questionId viene 0-based del índice actual, convertir a 1-based
+    const oneBasedIndex = questionId + 1
     setScaleResponses(prev => ({
       ...prev,
-      [questionId]: value
+      [oneBasedIndex]: value
     }))
     
     // Auto-advance to next question after a shorter delay
@@ -412,12 +432,8 @@ export default function HomePage() {
   }
 
   const showResultsToDoctor = () => {
-    // Usar el ID de la escala actual para navegar a sus resultados
-    if (currentScaleConfig) {
-      setCurrentPage(`${currentScaleConfig.id}-results`)
-    } else {
-      setCurrentPage('phq9-results') // Fallback para compatibilidad
-    }
+    // Usar página genérica de resultados para todas las escalas
+    setCurrentPage('generic-results')
   }
 
   const selectApplicationMode = (mode) => {
@@ -457,6 +473,19 @@ export default function HomePage() {
     setShowScaleHelp(true)
   }
 
+  // Función para calcular edad desde fecha de nacimiento
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return 0
+    const today = new Date()
+    const birth = new Date(birthDate)
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    return age
+  }
+
   // Función para agregar/quitar favoritos
   const toggleFavorite = (scaleId) => {
     setFavoriteScales(prev => {
@@ -470,6 +499,53 @@ export default function HomePage() {
       }
       
       return newFavorites
+    })
+  }
+
+  // Función para abrir popup de selección de escalas para paciente
+  const openScaleSelectionForPatient = (patient) => {
+    setScaleSelectionPatient(patient)
+    // Usar setTimeout para evitar conflictos de renderizado
+    setTimeout(() => {
+      setShowScaleSelectionPopup(true)
+    }, 10)
+  }
+
+  // Función para seleccionar escala desde popup y aplicarla al paciente
+  const selectScaleForPatient = (scaleId) => {
+    if (scaleSelectionPatient) {
+      setCurrentPatient(scaleSelectionPatient.name)
+      setSelectedPatient(scaleSelectionPatient)
+      handleStartScale(scaleId)
+      setShowScaleSelectionPopup(false)
+      setScaleSelectionPatient(null)
+    }
+  }
+
+  // Función para obtener escalas ordenadas por historial del paciente
+  const getOrderedScalesForPatient = (patient) => {
+    const availableScales = getAvailableScales()
+    
+    // Obtener evaluaciones del paciente
+    const patientEvaluations = evaluationHistory.filter(evaluation => evaluation.patient === patient.name)
+    
+    // Crear un mapa de frecuencia de escalas aplicadas
+    const scaleFrequency = {}
+    patientEvaluations.forEach(evaluation => {
+      const scaleId = evaluation.scale.toLowerCase().replace(/[^a-z0-9]/g, '')
+      scaleFrequency[scaleId] = (scaleFrequency[scaleId] || 0) + 1
+    })
+    
+    // Ordenar escalas: primero las más aplicadas al paciente, luego alfabéticamente
+    return availableScales.sort((a, b) => {
+      const freqA = scaleFrequency[a.id] || 0
+      const freqB = scaleFrequency[b.id] || 0
+      
+      if (freqA !== freqB) {
+        return freqB - freqA // Más frecuentes primero
+      }
+      
+      return a.fullName.localeCompare(b.fullName) // Alfabético como segundo criterio
     })
   }
 
@@ -508,8 +584,8 @@ export default function HomePage() {
   const showGenericResults = () => {
     if (!currentScaleConfig) return
     
-    // Usar la página de GADI results como página genérica ya que tiene el código para manejar todas las escalas
-    setCurrentPage('gadi-results')
+    // Usar página genérica unificada para todas las escalas
+    setCurrentPage('generic-results')
   }
 
   return (
@@ -3442,9 +3518,7 @@ export default function HomePage() {
                 </div>
                 
                 <button
-                  onClick={() => {
-                    setCurrentPage('gadi-results')
-                  }}
+                  onClick={showGenericResults}
                   style={{
                     backgroundColor: '#29A98C',
                     color: 'white',
@@ -3841,8 +3915,8 @@ export default function HomePage() {
           fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
         }}>
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-            {/* Tarjeta del Profesional - Configuración de Evaluación */}
-            {showProfessionalCard && (
+            {/* Tarjeta del Profesional - Configuración de Evaluación (Solo si no viene del flujo nuevo) */}
+            {showProfessionalCard && !applicationMode && (
               <div style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(10px)',
@@ -4179,11 +4253,18 @@ export default function HomePage() {
                     📋 Instrucciones
                   </h3>
                   <ul style={{ margin: 0, paddingLeft: '20px', color: '#112F33', lineHeight: '1.6', textAlign: 'left' }}>
-                    {currentScaleConfig.instructions.map((instruction, index) => (
-                      <li key={index} style={{ marginBottom: '8px', fontSize: '0.95rem' }}>
-                        {instruction}
-                      </li>
-                    ))}
+                    {(() => {
+                      // Manejar tanto arrays como strings en las instrucciones
+                      const instructions = Array.isArray(currentScaleConfig.instructions) 
+                        ? currentScaleConfig.instructions 
+                        : [currentScaleConfig.instructions]
+                      
+                      return instructions.map((instruction, index) => (
+                        <li key={index} style={{ marginBottom: '8px', fontSize: '0.95rem' }}>
+                          {instruction}
+                        </li>
+                      ))
+                    })()}
                   </ul>
                 </div>
 
@@ -4298,7 +4379,7 @@ export default function HomePage() {
                     
                     // Verificar si es una pregunta de porcentaje
                     if (typeof currentQuestion === 'object' && currentQuestion.type === 'percentage') {
-                      const currentValue = scaleResponses[currentQuestionIndex] || currentQuestion.defaultValue || 50
+                      const currentValue = scaleResponses[currentQuestionIndex + 1] || currentQuestion.defaultValue || 50
                       
                       return (
                         <div style={{ textAlign: 'center' }}>
@@ -4314,15 +4395,18 @@ export default function HomePage() {
                           
                           {/* Slider de porcentaje */}
                           <input
+                            id={`percentage-slider-${currentQuestionIndex}`}
+                            name={`percentage-question-${currentQuestionIndex}`}
                             type="range"
                             min={currentQuestion.min || 0}
                             max={currentQuestion.max || 100}
                             value={currentValue}
+                            aria-label={`Porcentaje de disfunción: ${currentValue}%`}
                             onChange={(e) => {
                               const value = parseInt(e.target.value)
                               setScaleResponses({
                                 ...scaleResponses,
-                                [currentQuestionIndex]: value
+                                [currentQuestionIndex + 1]: value
                               })
                               // Actualizar display inmediatamente
                               e.target.parentElement.querySelector('div').textContent = `${value}%`
@@ -4331,7 +4415,7 @@ export default function HomePage() {
                               width: '100%',
                               height: '8px',
                               borderRadius: '5px',
-                              background: 'linear-gradient(90deg, #f56565, #f6ad55, #68d391, #4fd1c7)',
+                              background: 'linear-gradient(90deg, #48bb78, #68d391, #f6ad55, #f56565)',
                               outline: 'none',
                               appearance: 'none',
                               WebkitAppearance: 'none',
@@ -4358,13 +4442,13 @@ export default function HomePage() {
                           {/* Botón continuar */}
                           <button
                             onClick={() => {
-                              if (scaleResponses[currentQuestionIndex] === undefined) {
+                              if (scaleResponses[currentQuestionIndex + 1] === undefined) {
                                 setScaleResponses({
                                   ...scaleResponses,
-                                  [currentQuestionIndex]: currentValue
+                                  [currentQuestionIndex + 1]: currentValue
                                 })
                               }
-                              handleScaleResponse(currentQuestionIndex, scaleResponses[currentQuestionIndex] || currentValue)
+                              handleScaleResponse(currentQuestionIndex, scaleResponses[currentQuestionIndex + 1] || currentValue)
                             }}
                             style={{
                               backgroundColor: '#29A98C',
@@ -4400,10 +4484,10 @@ export default function HomePage() {
                           key={index}
                           onClick={() => handleScaleResponse(currentQuestionIndex, statement.value)}
                           style={{
-                            background: scaleResponses[currentQuestionIndex] === statement.value ? 
+                            background: scaleResponses[currentQuestionIndex + 1] === statement.value ? 
                               'linear-gradient(135deg, #29A98C, #112F33)' : '#FFF8EE',
-                            color: scaleResponses[currentQuestionIndex] === statement.value ? 'white' : '#112F33',
-                            border: `2px solid ${scaleResponses[currentQuestionIndex] === statement.value ? '#29A98C' : '#e0e0e0'}`,
+                            color: scaleResponses[currentQuestionIndex + 1] === statement.value ? 'white' : '#112F33',
+                            border: `2px solid ${scaleResponses[currentQuestionIndex + 1] === statement.value ? '#29A98C' : '#e0e0e0'}`,
                             borderRadius: '12px',
                             padding: '18px',
                             cursor: 'pointer',
@@ -4415,14 +4499,14 @@ export default function HomePage() {
                             textAlign: 'left'
                           }}
                           onMouseEnter={(e) => {
-                            if (scaleResponses[currentQuestionIndex] !== statement.value) {
+                            if (scaleResponses[currentQuestionIndex + 1] !== statement.value) {
                               e.target.style.borderColor = '#29A98C'
                               e.target.style.transform = 'translateY(-2px)'
                               e.target.style.boxShadow = '0 5px 15px rgba(41, 169, 140, 0.2)'
                             }
                           }}
                           onMouseLeave={(e) => {
-                            if (scaleResponses[currentQuestionIndex] !== statement.value) {
+                            if (scaleResponses[currentQuestionIndex + 1] !== statement.value) {
                               e.target.style.borderColor = '#e0e0e0'
                               e.target.style.transform = 'translateY(0)'
                               e.target.style.boxShadow = 'none'
@@ -4441,10 +4525,10 @@ export default function HomePage() {
                           key={index}
                           onClick={() => handleScaleResponse(currentQuestionIndex, option.value)}
                           style={{
-                            background: scaleResponses[currentQuestionIndex] === option.value ? 
+                            background: scaleResponses[currentQuestionIndex + 1] === option.value ? 
                               'linear-gradient(135deg, #29A98C, #112F33)' : option.color,
-                            color: scaleResponses[currentQuestionIndex] === option.value ? 'white' : option.textColor,
-                            border: `2px solid ${scaleResponses[currentQuestionIndex] === option.value ? '#29A98C' : 'transparent'}`,
+                            color: scaleResponses[currentQuestionIndex + 1] === option.value ? 'white' : option.textColor,
+                            border: `2px solid ${scaleResponses[currentQuestionIndex + 1] === option.value ? '#29A98C' : 'transparent'}`,
                             borderRadius: '15px',
                             padding: '20px',
                             cursor: 'pointer',
@@ -4460,14 +4544,14 @@ export default function HomePage() {
                             gap: '8px'
                           }}
                           onMouseEnter={(e) => {
-                            if (scaleResponses[currentQuestionIndex] !== option.value) {
+                            if (scaleResponses[currentQuestionIndex + 1] !== option.value) {
                               e.target.style.transform = 'translateY(-2px)'
                               e.target.style.boxShadow = '0 8px 25px rgba(41, 169, 140, 0.15)'
                               e.target.style.borderColor = '#29A98C'
                             }
                           }}
                           onMouseLeave={(e) => {
-                            if (scaleResponses[currentQuestionIndex] !== option.value) {
+                            if (scaleResponses[currentQuestionIndex + 1] !== option.value) {
                               e.target.style.transform = 'translateY(0)'
                               e.target.style.boxShadow = 'none'
                               e.target.style.borderColor = 'transparent'
@@ -4484,6 +4568,11 @@ export default function HomePage() {
 
                     // Determinar qué opciones usar para escalas especiales
                     let optionsToUse = currentScaleConfig.options
+                    
+                    // Debug: Log para verificar opciones
+                    console.log('Scale ID:', currentScaleConfig.id)
+                    console.log('Scale options:', currentScaleConfig.options)
+                    console.log('Options to use:', optionsToUse)
                     
                     if (currentScaleConfig.id === 'mos-sleep') {
                       const question = currentScaleConfig.questions[currentQuestionIndex]
@@ -4505,16 +4594,39 @@ export default function HomePage() {
                       // Para preguntas afectivas usa las opciones por defecto
                     }
                     
+                    // Validación de seguridad para opciones
+                    if (!optionsToUse || !Array.isArray(optionsToUse) || optionsToUse.length === 0) {
+                      console.error('No options available for scale:', currentScaleConfig.id)
+                      return (
+                        <div style={{ 
+                          padding: '20px', 
+                          textAlign: 'center', 
+                          color: '#ef4444',
+                          backgroundColor: '#fef2f2',
+                          borderRadius: '8px',
+                          border: '1px solid #fecaca'
+                        }}>
+                          Error: No hay opciones de respuesta disponibles para esta escala.
+                          <br />
+                          <small>Scale ID: {currentScaleConfig.id}</small>
+                        </div>
+                      )
+                    }
+                    
                     // Renderizar opciones normales
-                    return optionsToUse.map((option, index) => (
-                      <div
+                    return optionsToUse.map((option, index) => {
+                      const optionId = `scale-${currentScaleConfig.id}-q${currentQuestionIndex}-option${index}`
+                      const isSelected = scaleResponses[currentQuestionIndex + 1] === option.value
+                      
+                      return (
+                      <label
                         key={index}
-                        onClick={() => handleScaleResponse(currentQuestionIndex, option.value)}
+                        htmlFor={optionId}
                         style={{
-                          background: scaleResponses[currentQuestionIndex] === option.value ? 
+                          background: scaleResponses[currentQuestionIndex + 1] === option.value ? 
                             'linear-gradient(135deg, #29A98C, #112F33)' : '#FFF8EE',
-                          color: scaleResponses[currentQuestionIndex] === option.value ? 'white' : '#112F33',
-                          border: `2px solid ${scaleResponses[currentQuestionIndex] === option.value ? '#29A98C' : '#e0e0e0'}`,
+                          color: scaleResponses[currentQuestionIndex + 1] === option.value ? 'white' : '#112F33',
+                          border: `2px solid ${scaleResponses[currentQuestionIndex + 1] === option.value ? '#29A98C' : '#e0e0e0'}`,
                           borderRadius: '12px',
                           padding: '18px',
                           cursor: 'pointer',
@@ -4524,23 +4636,45 @@ export default function HomePage() {
                           overflow: 'hidden'
                         }}
                         onMouseEnter={(e) => {
-                          if (scaleResponses[currentQuestionIndex] !== option.value) {
+                          if (scaleResponses[currentQuestionIndex + 1] !== option.value) {
                             e.target.style.borderColor = '#29A98C'
                             e.target.style.transform = 'translateY(-2px)'
                             e.target.style.boxShadow = '0 5px 15px rgba(41, 169, 140, 0.2)'
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (scaleResponses[currentQuestionIndex] !== option.value) {
+                          if (scaleResponses[currentQuestionIndex + 1] !== option.value) {
                             e.target.style.borderColor = '#e0e0e0'
                             e.target.style.transform = 'translateY(0)'
                             e.target.style.boxShadow = 'none'
                           }
                         }}
                       >
-                        {option.label}
-                      </div>
-                    ))
+                        {/* Radio button oculto para accesibilidad */}
+                        <input
+                          type="radio"
+                          id={optionId}
+                          name={`question-${currentQuestionIndex}`}
+                          value={option.value}
+                          checked={isSelected}
+                          onChange={() => handleScaleResponse(currentQuestionIndex, option.value)}
+                          style={{ 
+                            position: 'absolute',
+                            opacity: 0,
+                            width: 0,
+                            height: 0
+                          }}
+                        />
+                        {/* Emoji y texto */}
+                        {option.emoji && (
+                          <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>
+                            {option.emoji}
+                          </span>
+                        )}
+                        <span>{option.text || option.label}</span>
+                      </label>
+                    )
+                    })
                   })()}
                 </div>
               </div>
@@ -4616,7 +4750,7 @@ export default function HomePage() {
                 )}
                 
                 {/* Botón específico según el modo */}
-                {applicationMode === 'local' ? (
+                {(applicationMode === 'local' || applicationMode === 'presencial') ? (
                   <button
                     onClick={showGenericResults}
                     style={{
@@ -4742,7 +4876,7 @@ export default function HomePage() {
       )}
 
       {/* Generic Scale Results Page */}
-      {currentPage.endsWith('-results') && isAuthenticated && currentScaleConfig && (
+      {currentPage === 'generic-results' && isAuthenticated && currentScaleConfig && (
         <div style={{ 
           background: 'linear-gradient(135deg, #29A98C 0%, #112F33 100%)', 
           minHeight: '100vh', 
@@ -4776,16 +4910,8 @@ export default function HomePage() {
               </div>
 
               {(() => {
-                // Determinar qué respuestas usar basado en la escala actual
-                let responses
-                if (currentPage === 'phq9-results') {
-                  responses = phq9Responses
-                } else if (currentPage === 'gadi-results') {
-                  responses = gadiResponses
-                } else {
-                  // Para escalas genéricas, usar scaleResponses
-                  responses = scaleResponses
-                }
+                // Usar scaleResponses para todas las escalas en el sistema genérico
+                const responses = scaleResponses
                 
                 const result = currentScaleConfig.calculateScore(responses)
                 const interpretation = currentScaleConfig.getInterpretation(result)
@@ -4981,6 +5107,322 @@ export default function HomePage() {
                   </>
                 )
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================== SISTEMA GENÉRICO DE ESCALAS ======================== */}
+      
+      {/* Tarjeta 1: Modo de Aplicación */}
+      {currentPage === 'application-mode' && isAuthenticated && currentScaleConfig && (
+        <div style={{ 
+          background: 'linear-gradient(135deg, #29A98C 0%, #112F33 100%)', 
+          minHeight: '100vh', 
+          padding: '20px',
+          fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
+        }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '20px',
+              padding: '40px',
+              margin: '20px 0',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              {/* Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #29A98C, #112F33)',
+                color: 'white',
+                padding: '20px',
+                borderRadius: '15px',
+                textAlign: 'center',
+                marginBottom: '30px'
+              }}>
+                <h1 style={{ fontSize: '1.8rem', marginBottom: '10px', fontWeight: '600' }}>
+                  {currentScaleConfig.name}
+                </h1>
+                <p style={{ fontSize: '1rem', opacity: '0.9', margin: 0 }}>
+                  {currentScaleConfig.fullName}
+                </p>
+              </div>
+
+              {/* Modo de Aplicación */}
+              <div style={{ marginBottom: '30px' }}>
+                <h3 style={{ 
+                  color: '#112F33', 
+                  marginBottom: '20px', 
+                  fontSize: '1.4rem',
+                  textAlign: 'center'
+                }}>
+                  ¿Cómo desea aplicar esta escala?
+                </h3>
+                
+                <div style={{ display: 'grid', gap: '20px' }}>
+                  {/* Opción Presencial */}
+                  <div
+                    onClick={() => {
+                      setApplicationMode('presencial')
+                      setCurrentPage('patient-selection')
+                    }}
+                    style={{
+                      background: applicationMode === 'presencial' 
+                        ? 'linear-gradient(135deg, #29A98C, #112F33)' 
+                        : 'rgba(255, 255, 255, 0.8)',
+                      color: applicationMode === 'presencial' ? 'white' : '#112F33',
+                      border: '2px solid #29A98C',
+                      borderRadius: '15px',
+                      padding: '25px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      textAlign: 'center'
+                    }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🏥</div>
+                    <h4 style={{ fontSize: '1.3rem', margin: '0 0 10px 0', fontWeight: '600' }}>
+                      Presencial / En Consulta
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.95rem', opacity: '0.9' }}>
+                      El paciente responderá en este dispositivo o en dispositivo local
+                    </p>
+                  </div>
+
+                  {/* Opción Remoto */}
+                  <div
+                    onClick={() => {
+                      setApplicationMode('remoto')
+                      setCurrentPage('patient-selection')
+                    }}
+                    style={{
+                      background: applicationMode === 'remoto' 
+                        ? 'linear-gradient(135deg, #29A98C, #112F33)' 
+                        : 'rgba(255, 255, 255, 0.8)',
+                      color: applicationMode === 'remoto' ? 'white' : '#112F33',
+                      border: '2px solid #29A98C',
+                      borderRadius: '15px',
+                      padding: '25px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      textAlign: 'center'
+                    }}
+                  >
+                    <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📱</div>
+                    <h4 style={{ fontSize: '1.3rem', margin: '0 0 10px 0', fontWeight: '600' }}>
+                      Remoto / A Distancia
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.95rem', opacity: '0.9' }}>
+                      Generar link para enviar por correo o mensaje al paciente
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón Regresar */}
+              <button
+                onClick={() => setCurrentPage('dashboard')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  color: '#29A98C',
+                  border: '2px solid #29A98C',
+                  padding: '12px 25px',
+                  borderRadius: '25px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  width: '100%',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                ← Regresar al Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tarjeta 2: Selección de Paciente */}
+      {currentPage === 'patient-selection' && isAuthenticated && currentScaleConfig && (
+        <div style={{ 
+          background: 'linear-gradient(135deg, #29A98C 0%, #112F33 100%)', 
+          minHeight: '100vh', 
+          padding: '20px',
+          fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
+        }}>
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '20px',
+              padding: '40px',
+              margin: '20px 0',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              {/* Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #29A98C, #112F33)',
+                color: 'white',
+                padding: '20px',
+                borderRadius: '15px',
+                textAlign: 'center',
+                marginBottom: '30px'
+              }}>
+                <h1 style={{ fontSize: '1.8rem', marginBottom: '10px', fontWeight: '600' }}>
+                  Seleccionar Paciente
+                </h1>
+                <p style={{ fontSize: '1rem', opacity: '0.9', margin: 0 }}>
+                  {currentScaleConfig.name} - Modalidad: {applicationMode === 'presencial' ? '🏥 Presencial' : '📱 Remoto'}
+                </p>
+              </div>
+
+              {/* Campo de búsqueda de paciente */}
+              <div style={{ marginBottom: '25px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  color: '#112F33', 
+                  fontWeight: '600', 
+                  fontSize: '1.1rem',
+                  marginBottom: '10px' 
+                }}>
+                  Nombre del Paciente
+                </label>
+                <input
+                  type="text"
+                  value={currentPatient}
+                  onChange={(e) => {
+                    setCurrentPatient(e.target.value)
+                    if (e.target.value.length > 0) {
+                      const filtered = patients.filter(patient =>
+                        patient.name.toLowerCase().includes(e.target.value.toLowerCase())
+                      )
+                      setPatientSuggestions(filtered.slice(0, 5))
+                      setShowSuggestions(filtered.length > 0)
+                    } else {
+                      setShowSuggestions(false)
+                    }
+                  }}
+                  placeholder="Ingrese el nombre del paciente o deje vacío para 'Anónimo'"
+                  style={{
+                    width: '100%',
+                    padding: '15px',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '10px',
+                    fontSize: '1rem',
+                    outline: 'none',
+                    transition: 'border-color 0.3s ease'
+                  }}
+                />
+
+                {/* Sugerencias de pacientes */}
+                {showSuggestions && patientSuggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: 'white',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '8px',
+                    zIndex: 1000,
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    {patientSuggestions.map((patient, index) => (
+                      <div
+                        key={patient.id}
+                        onClick={() => {
+                          setCurrentPatient(patient.name)
+                          setShowSuggestions(false)
+                        }}
+                        style={{
+                          padding: '12px 15px',
+                          cursor: 'pointer',
+                          borderBottom: index < patientSuggestions.length - 1 ? '1px solid #f1f5f9' : 'none',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#f8fafc'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = 'white'
+                        }}
+                      >
+                        <div style={{ fontWeight: 'bold', color: '#112F33', marginBottom: '2px' }}>
+                          {patient.name}
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: '#64748b' }}>
+                          {patient.birthDate && `${calculateAge(patient.birthDate)} años`}
+                          {patient.gender && ` • ${patient.gender}`}
+                          {patient.diagnosis && ` • ${patient.diagnosis}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <p style={{ 
+                  color: '#64748b', 
+                  fontSize: '0.875rem', 
+                  marginTop: '5px', 
+                  marginBottom: 0 
+                }}>
+                  Si no se especifica un nombre, el reporte se generará como "Paciente Anónimo"
+                </p>
+              </div>
+
+              {/* Botón Continuar */}
+              <button
+                onClick={() => {
+                  // Ir directamente al sistema de escalas genérico
+                  if (applicationMode === 'presencial') {
+                    // Para modo presencial, mostrar instrucciones al paciente
+                    setShowWelcome(true)
+                    setShowProfessionalCard(false)
+                    setShowPatientInstructions(true)
+                    setCurrentPage('scale')
+                  } else {
+                    // Para modo remoto, generar link
+                    alert('Función de generar link en desarrollo. Por ahora, continúe con modo presencial.')
+                  }
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #29A98C, #112F33)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '15px 30px',
+                  borderRadius: '25px',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                  fontWeight: '600',
+                  width: '100%',
+                  marginBottom: '15px',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {applicationMode === 'presencial' ? '➡️ Pasar Dispositivo a Paciente' : '📱 Generar Link de Evaluación'}
+              </button>
+
+              {/* Botón Regresar */}
+              <button
+                onClick={() => setCurrentPage('application-mode')}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  color: '#29A98C',
+                  border: '2px solid #29A98C',
+                  padding: '12px 25px',
+                  borderRadius: '25px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  width: '100%',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                ← Regresar
+              </button>
             </div>
           </div>
         </div>
@@ -5415,38 +5857,85 @@ export default function HomePage() {
                 { 
                   id: 1, 
                   name: 'Juan Pérez', 
+                  birthDate: '1989-03-15',
                   age: 35, 
                   gender: 'M',
+                  email: 'juan.perez@email.com',
+                  phone: '+34 655 123 456',
                   diagnosis: 'Ansiedad generalizada',
+                  tags: ['ansiedad', 'adulto', 'terapia individual'],
+                  referringProfessional: 'Dra. Martínez',
+                  firstConsultDate: '2024-01-10',
                   lastVisit: '2024-06-15',
-                  evaluations: ['PHQ-9', 'GADI']
+                  evaluations: [
+                    { scale: 'PHQ-9', date: '2024-06-15', score: 12 },
+                    { scale: 'GADI', date: '2024-05-20', score: 28 },
+                    { scale: 'PHQ-9', date: '2024-04-10', score: 18 }
+                  ],
+                  status: 'active',
+                  createdAt: '2024-01-10'
                 },
                 { 
                   id: 2, 
                   name: 'María García', 
+                  birthDate: '1996-07-22',
                   age: 28, 
                   gender: 'F',
+                  email: 'maria.garcia@gmail.com',
+                  phone: '+34 612 987 654',
                   diagnosis: 'Depresión mayor',
+                  tags: ['depresión', 'adulto joven', 'medicación'],
+                  referringProfessional: 'Dr. Rodríguez',
+                  firstConsultDate: '2024-02-05',
                   lastVisit: '2024-06-10',
-                  evaluations: ['Beck-21', 'MOS Sleep']
+                  evaluations: [
+                    { scale: 'Beck-21', date: '2024-06-10', score: 25 },
+                    { scale: 'MOS Sleep', date: '2024-06-10', score: 45 },
+                    { scale: 'Beck-21', date: '2024-05-05', score: 32 }
+                  ],
+                  status: 'active',
+                  createdAt: '2024-02-05'
                 },
                 { 
                   id: 3, 
                   name: 'Carlos López', 
+                  birthDate: '1982-11-08',
                   age: 42, 
                   gender: 'M',
+                  email: 'carlos.lopez@hotmail.com',
+                  phone: '+34 699 555 333',
                   diagnosis: 'Trastorno bipolar',
+                  tags: ['bipolar', 'adulto', 'seguimiento psiquiátrico'],
+                  referringProfessional: 'Psiquiatría General',
+                  firstConsultDate: '2023-11-15',
                   lastVisit: '2024-06-05',
-                  evaluations: ['HARS', 'Beck-21']
+                  evaluations: [
+                    { scale: 'HARS', date: '2024-06-05', score: 18 },
+                    { scale: 'Beck-21', date: '2024-06-05', score: 15 }
+                  ],
+                  status: 'active',
+                  createdAt: '2023-11-15'
                 },
                 { 
                   id: 4, 
                   name: 'Ana Martínez', 
+                  birthDate: '1993-04-30',
                   age: 31, 
                   gender: 'F',
+                  email: 'ana.martinez@yahoo.com',
                   diagnosis: 'TLP',
+                  tags: ['TLP', 'adulto joven', 'terapia DBT', 'urgente'],
+                  referringProfessional: 'Hospital Central',
+                  firstConsultDate: '2024-03-20',
                   lastVisit: '2024-06-01',
-                  evaluations: ['BLS-23', 'Beck-21']
+                  evaluations: [
+                    { scale: 'BLS-23', date: '2024-06-01', score: 68 },
+                    { scale: 'Beck-21', date: '2024-06-01', score: 38 }
+                  ],
+                  emergencyContact: 'Pedro Martínez (hermano)',
+                  emergencyPhone: '+34 677 888 999',
+                  status: 'active',
+                  createdAt: '2024-03-20'
                 }
               ]
               
@@ -5459,7 +5948,10 @@ export default function HomePage() {
                   patient.name.toLowerCase().includes(searchTerm) ||
                   patient.diagnosis.toLowerCase().includes(searchTerm) ||
                   patient.gender.toLowerCase().includes(searchTerm) ||
-                  patient.evaluations.some(evaluation => evaluation.toLowerCase().includes(searchTerm))
+                  (patient.email && patient.email.toLowerCase().includes(searchTerm)) ||
+                  (patient.phone && patient.phone.toLowerCase().includes(searchTerm)) ||
+                  patient.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
+                  patient.evaluations.some(evaluation => evaluation.scale.toLowerCase().includes(searchTerm))
                 )
               })
 
@@ -5476,7 +5968,7 @@ export default function HomePage() {
                     type="text"
                     value={patientsSearch}
                     onChange={(e) => setPatientsSearch(e.target.value)}
-                    placeholder="🔍 Buscar pacientes por nombre, diagnóstico, sexo o escalas aplicadas..."
+                    placeholder="🔍 Buscar por nombre, diagnóstico, email, teléfono, tags..."
                     style={{ 
                       width: '100%', 
                       padding: '0.875rem 1rem', 
@@ -5617,176 +6109,396 @@ export default function HomePage() {
                       const lastEvaluation = patientEvaluations[patientEvaluations.length - 1]
                       const hasPhq9Data = patientEvaluations.some(e => e.scale === 'PHQ-9')
                       
+                      // Calcular días desde última visita
+                      const daysSinceLastVisit = patient.lastVisit ? 
+                        Math.floor((new Date() - new Date(patient.lastVisit)) / (1000 * 60 * 60 * 24)) : null
+                      
+                      // Determinar estado de actividad
+                      const activityStatus = daysSinceLastVisit < 30 ? 'active' : 
+                                           daysSinceLastVisit < 90 ? 'moderate' : 'inactive'
+                      
                       return (
                         <div key={patient.id} style={{
                           backgroundColor: 'white',
-                          borderRadius: '12px',
-                          padding: '1.25rem',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                          borderRadius: '16px',
+                          overflow: 'hidden',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
                           border: '1px solid #e5e7eb',
-                          transition: 'all 0.2s ease',
+                          transition: 'all 0.3s ease',
                           cursor: 'pointer'
                         }}
                         onMouseOver={(e) => {
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
-                          e.currentTarget.style.transform = 'translateY(-1px)'
+                          e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)'
+                          e.currentTarget.style.transform = 'translateY(-2px)'
                         }}
                         onMouseOut={(e) => {
-                          e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)'
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)'
                           e.currentTarget.style.transform = 'translateY(0)'
                         }}>
                           
-                          {/* Header del paciente */}
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-                            <div style={{ 
-                              width: '2.5rem', 
-                              height: '2.5rem', 
-                              backgroundColor: '#29A98C', 
-                              borderRadius: '50%', 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center',
-                              marginRight: '0.875rem'
-                            }}>
-                              <SvgIcon name="person-name-svgrepo-com" size="1.25rem" color="white" />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                              <h3 style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#112F33', margin: 0 }}>
-                                {patient.name}
-                              </h3>
-                              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
-                                Registrado: {new Date(patient.createdAt).toLocaleDateString('es-ES')}
-                              </p>
+                          {/* Header con gradiente */}
+                          <div style={{ 
+                            background: 'linear-gradient(135deg, #29A98C 0%, #22875c 100%)',
+                            padding: '1.25rem',
+                            position: 'relative'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                              <div style={{ 
+                                width: '3.5rem', 
+                                height: '3.5rem', 
+                                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                                borderRadius: '50%', 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                border: '2px solid rgba(255, 255, 255, 0.3)'
+                              }}>
+                                <span style={{ fontSize: '1.5rem', color: 'white' }}>
+                                  {patient.gender === 'M' ? '👨' : patient.gender === 'F' ? '👩' : '👤'}
+                                </span>
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'white', margin: 0 }}>
+                                  {patient.name}
+                                </h3>
+                                <p style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)', margin: '0.25rem 0 0 0' }}>
+                                  ID: #{patient.id.toString().padStart(5, '0')}
+                                </p>
+                              </div>
+                              {/* Indicador de actividad */}
+                              <div style={{ 
+                                position: 'absolute',
+                                top: '1rem',
+                                right: '1rem',
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: activityStatus === 'active' ? '#10b981' : 
+                                               activityStatus === 'moderate' ? '#f59e0b' : '#ef4444',
+                                border: '2px solid white',
+                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                              }} title={`${activityStatus === 'active' ? 'Activo' : 
+                                         activityStatus === 'moderate' ? 'Moderado' : 'Inactivo'} 
+                                         (${daysSinceLastVisit} días desde última visita)`} />
                             </div>
                           </div>
 
-                          {/* Información básica */}
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
-                            {patient.birthDate && (
-                              <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
-                                <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Fecha Nac.</span>
-                                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#112F33' }}>
-                                  {new Date(patient.birthDate).toLocaleDateString('es-ES')}
-                                </span>
+                          <div style={{ padding: '1.25rem' }}>
+                            {/* Información de contacto */}
+                            <div style={{ marginBottom: '1rem' }}>
+                              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <span style={{ fontSize: '0.875rem' }}>📧</span>
+                                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                    {patient.email || 'Sin email'}
+                                  </span>
+                                </div>
                               </div>
-                            )}
-                            {patient.birthDate && (
-                              <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
-                                <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Edad</span>
-                                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#112F33' }}>
+                              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <span style={{ fontSize: '0.875rem' }}>📱</span>
+                                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                    {patient.phone || 'Sin teléfono'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Información clínica */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
+                              <div style={{ backgroundColor: '#f0f9ff', padding: '0.75rem', borderRadius: '8px' }}>
+                                <span style={{ fontSize: '0.7rem', color: '#0369a1', display: 'block', marginBottom: '0.25rem' }}>
+                                  Edad
+                                </span>
+                                <span style={{ fontSize: '1rem', fontWeight: '600', color: '#0c4a6e' }}>
                                   {calculateAge(patient.birthDate)} años
                                 </span>
                               </div>
-                            )}
-                            {patient.gender && (
-                              <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
-                                <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Sexo</span>
-                                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#112F33' }}>
-                                  {patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : patient.gender}
+                              <div style={{ backgroundColor: '#fef3c7', padding: '0.75rem', borderRadius: '8px' }}>
+                                <span style={{ fontSize: '0.7rem', color: '#d97706', display: 'block', marginBottom: '0.25rem' }}>
+                                  Evaluaciones
+                                </span>
+                                <span style={{ fontSize: '1rem', fontWeight: '600', color: '#92400e' }}>
+                                  {patientEvaluations.length} total
                                 </span>
                               </div>
-                            )}
-                            {patient.email && (
-                              <div style={{ backgroundColor: '#f8fafc', padding: '0.5rem', borderRadius: '6px' }}>
-                                <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Email</span>
-                                <span style={{ fontSize: '0.75rem', fontWeight: '600', color: '#112F33', wordBreak: 'break-all' }}>
-                                  {patient.email}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Diagnóstico */}
-                          {patient.diagnosis && (
-                            <div style={{ backgroundColor: '#fff7ed', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem' }}>
-                              <span style={{ fontSize: '0.7rem', color: '#ea580c', display: 'block', marginBottom: '0.25rem' }}>
-                                Diagnóstico
-                              </span>
-                              <span style={{ fontSize: '0.875rem', color: '#9a3412' }}>
-                                {patient.diagnosis}
-                              </span>
                             </div>
-                          )}
 
-                          {/* Métricas de evaluaciones */}
-                          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                            <span style={{ backgroundColor: '#f0f9ff', color: '#0369a1', padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500' }}>
-                              {patientEvaluations.length} evaluaciones
-                            </span>
-                            {lastEvaluation && (
-                              <span style={{ backgroundColor: '#f0fdf4', color: '#059669', padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500' }}>
-                                Última: {new Date(lastEvaluation.date).toLocaleDateString('es-ES')}
-                              </span>
-                            )}
-                            {Object.keys(
-                              patientEvaluations.reduce((acc, evaluation) => {
-                                acc[evaluation.scale] = true
-                                return acc
-                              }, {})
-                            ).slice(0, 2).map(scale => (
-                              <span key={scale} style={{ backgroundColor: '#f3f4f6', color: '#374151', padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500' }}>
-                                {scale}
-                              </span>
-                            ))}
-                            {/* Indicador de modalidad */}
-                            {patientEvaluations.some(e => e.applicationMode === 'local') && (
-                              <span style={{ backgroundColor: '#e0e7ff', color: '#4338ca', padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500' }}>
-                                📍 Presencial
-                              </span>
-                            )}
-                            {patientEvaluations.some(e => e.applicationMode === 'remote') && (
-                              <span style={{ backgroundColor: '#fce7f3', color: '#be185d', padding: '0.25rem 0.5rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500' }}>
-                                🌐 Distancia
-                              </span>
-                            )}
-                          </div>
+                            {/* Diagnóstico y profesional */}
+                            <div style={{ 
+                              backgroundColor: '#fff7ed', 
+                              padding: '0.875rem', 
+                              borderRadius: '8px', 
+                              marginBottom: '1rem' 
+                            }}>
+                              <div style={{ marginBottom: '0.75rem' }}>
+                                <span style={{ fontSize: '0.7rem', color: '#ea580c', display: 'block', marginBottom: '0.25rem' }}>
+                                  Diagnóstico Principal
+                                </span>
+                                <span style={{ fontSize: '0.875rem', color: '#9a3412', fontWeight: '600' }}>
+                                  {patient.diagnosis}
+                                </span>
+                              </div>
+                              {patient.referringProfessional && (
+                                <div>
+                                  <span style={{ fontSize: '0.7rem', color: '#ea580c', display: 'block', marginBottom: '0.25rem' }}>
+                                    Referido por
+                                  </span>
+                                  <span style={{ fontSize: '0.8rem', color: '#9a3412' }}>
+                                    {patient.referringProfessional}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
 
-                          {/* Botones de acción */}
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            {hasPhq9Data && (
+                            {/* Tags */}
+                            {patient.tags && patient.tags.length > 0 && (
+                              <div style={{ marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                  {patient.tags.map((tag, index) => (
+                                    <span key={index} style={{ 
+                                      backgroundColor: tag.includes('urgente') ? '#fee2e2' : '#e0e7ff', 
+                                      color: tag.includes('urgente') ? '#dc2626' : '#4338ca', 
+                                      padding: '0.25rem 0.75rem', 
+                                      borderRadius: '999px', 
+                                      fontSize: '0.7rem', 
+                                      fontWeight: '500',
+                                      border: `1px solid ${tag.includes('urgente') ? '#fecaca' : '#c7d2fe'}`
+                                    }}>
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Escalas aplicadas con detalle - Clickeable para nueva evaluación */}
+                            <div 
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                openScaleSelectionForPatient(patient)
+                              }}
+                              style={{ 
+                                backgroundColor: '#f8fafc', 
+                                padding: '0.75rem', 
+                                borderRadius: '8px', 
+                                marginBottom: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                border: '1px solid transparent'
+                              }}
+                              onMouseOver={(e) => {
+                                e.target.style.backgroundColor = '#e2e8f0'
+                                e.target.style.borderColor = '#29A98C'
+                                e.target.style.transform = 'translateY(-1px)'
+                                e.target.style.boxShadow = '0 4px 12px rgba(41, 169, 140, 0.15)'
+                                
+                                // Mostrar tooltip
+                                const tooltip = document.createElement('div')
+                                tooltip.id = 'scales-tooltip'
+                                tooltip.innerHTML = '+ Aplicar nueva escala'
+                                tooltip.style.cssText = `
+                                  position: absolute;
+                                  background: #112F33;
+                                  color: white;
+                                  padding: 0.5rem 0.75rem;
+                                  border-radius: 6px;
+                                  font-size: 0.75rem;
+                                  font-weight: 500;
+                                  white-space: nowrap;
+                                  z-index: 1000;
+                                  pointer-events: none;
+                                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                                  transform: translateY(-100%) translateX(-50%);
+                                  margin-top: -0.5rem;
+                                  left: 50%;
+                                  top: 0;
+                                `
+                                e.target.style.position = 'relative'
+                                e.target.appendChild(tooltip)
+                              }}
+                              onMouseOut={(e) => {
+                                e.target.style.backgroundColor = '#f8fafc'
+                                e.target.style.borderColor = 'transparent'
+                                e.target.style.transform = 'translateY(0)'
+                                e.target.style.boxShadow = 'none'
+                                
+                                // Remover tooltip
+                                const tooltip = document.getElementById('scales-tooltip')
+                                if (tooltip) {
+                                  tooltip.remove()
+                                }
+                              }}
+                            >
+                              <div style={{ 
+                                fontSize: '0.75rem', 
+                                fontWeight: '600', 
+                                color: '#475569', 
+                                marginBottom: '0.5rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                              }}>
+                                <span>Escalas Aplicadas</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <span style={{ fontSize: '0.7rem', fontWeight: 'normal' }}>
+                                    Total: {patientEvaluations.length}
+                                  </span>
+                                  <span style={{ 
+                                    fontSize: '0.8rem', 
+                                    color: '#29A98C',
+                                    fontWeight: '600'
+                                  }}>
+                                    +
+                                  </span>
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                {Object.entries(
+                                  patientEvaluations.reduce((acc, evaluation) => {
+                                    if (!acc[evaluation.scale]) {
+                                      acc[evaluation.scale] = 0
+                                    }
+                                    acc[evaluation.scale]++
+                                    return acc
+                                  }, {})
+                                ).map(([scale, count]) => (
+                                  <span key={scale} style={{ 
+                                    backgroundColor: 'white', 
+                                    color: '#374151', 
+                                    padding: '0.25rem 0.5rem', 
+                                    borderRadius: '6px', 
+                                    fontSize: '0.65rem', 
+                                    fontWeight: '500',
+                                    border: '1px solid #e5e7eb',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.25rem'
+                                  }}>
+                                    {scale} 
+                                    {count > 1 && (
+                                      <span style={{ 
+                                        backgroundColor: '#29A98C', 
+                                        color: 'white', 
+                                        padding: '0 0.25rem', 
+                                        borderRadius: '10px',
+                                        fontSize: '0.6rem'
+                                      }}>
+                                        {count}
+                                      </span>
+                                    )}
+                                  </span>
+                                ))}
+                              </div>
+                              {lastEvaluation && (
+                                <div style={{ 
+                                  marginTop: '0.5rem', 
+                                  paddingTop: '0.5rem', 
+                                  borderTop: '1px solid #e5e7eb',
+                                  fontSize: '0.7rem',
+                                  color: '#64748b'
+                                }}>
+                                  Última: {lastEvaluation.scale} ({new Date(lastEvaluation.date).toLocaleDateString('es-ES')})
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Contacto de emergencia */}
+                            {patient.emergencyContact && (
+                              <div style={{ 
+                                backgroundColor: '#fee2e2', 
+                                padding: '0.75rem', 
+                                borderRadius: '8px', 
+                                marginBottom: '1rem',
+                                fontSize: '0.75rem' 
+                              }}>
+                                <span style={{ color: '#dc2626', fontWeight: '600' }}>🚨 Contacto Emergencia:</span>
+                                <div style={{ color: '#7f1d1d', marginTop: '0.25rem' }}>
+                                  {patient.emergencyContact} - {patient.emergencyPhone}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Botones de acción mejorados */}
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  openPatientChart(patient)
+                                  openScaleSelectionForPatient(patient)
                                 }}
                                 style={{ 
-                                  padding: '0.5rem', 
-                                  backgroundColor: '#f0f9ff', 
-                                  color: '#0369a1', 
-                                  border: '1px solid #bae6fd', 
-                                  borderRadius: '6px', 
+                                  flex: 1,
+                                  padding: '0.75rem', 
+                                  backgroundColor: '#29A98C', 
+                                  color: 'white', 
+                                  border: 'none', 
+                                  borderRadius: '8px', 
                                   cursor: 'pointer', 
-                                  fontSize: '0.75rem', 
-                                  fontWeight: '500',
-                                  minWidth: '30px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center'
+                                  fontSize: '0.8rem', 
+                                  fontWeight: '600',
+                                  transition: 'all 0.2s ease'
                                 }}
-                                title="Ver evolución en gráfico"
+                                onMouseOver={(e) => {
+                                  e.target.style.backgroundColor = '#22875c'
+                                  e.target.style.transform = 'translateY(-1px)'
+                                }}
+                                onMouseOut={(e) => {
+                                  e.target.style.backgroundColor = '#29A98C'
+                                  e.target.style.transform = 'translateY(0)'
+                                }}
                               >
-                                📈
+                                + Nueva Evaluación
                               </button>
-                            )}
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                // Aquí podrías abrir un modal de detalles del paciente
-                              }}
-                              style={{ 
-                                flex: 1, 
-                                padding: '0.5rem', 
-                                backgroundColor: '#29A98C', 
-                                color: 'white', 
-                                border: 'none', 
-                                borderRadius: '6px', 
-                                cursor: 'pointer', 
-                                fontSize: '0.75rem', 
-                                fontWeight: '600'
-                              }}
-                            >
-                              Ver Detalles
-                            </button>
+                              
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {hasPhq9Data && (
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      openPatientChart(patient)
+                                    }}
+                                    style={{ 
+                                      padding: '0.75rem', 
+                                      backgroundColor: '#f0f9ff', 
+                                      color: '#0369a1', 
+                                      border: '1px solid #bae6fd', 
+                                      borderRadius: '8px', 
+                                      cursor: 'pointer', 
+                                      fontSize: '0.8rem', 
+                                      fontWeight: '500',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                    title="Ver evolución"
+                                  >
+                                    📊
+                                  </button>
+                                )}
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    alert('Función de editar paciente próximamente')
+                                  }}
+                                  style={{ 
+                                    padding: '0.75rem', 
+                                    backgroundColor: '#f3f4f6', 
+                                    color: '#475569', 
+                                    border: '1px solid #e5e7eb', 
+                                    borderRadius: '8px', 
+                                    cursor: 'pointer', 
+                                    fontSize: '0.8rem', 
+                                    fontWeight: '500',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                  title="Editar paciente"
+                                >
+                                  ✏️
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )
@@ -6261,10 +6973,12 @@ export default function HomePage() {
                   backgroundColor: 'white',
                   borderRadius: '16px',
                   padding: '2rem',
-                  maxWidth: '500px',
+                  maxWidth: '700px',
                   width: '100%',
                   position: 'relative',
-                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                  maxHeight: '90vh',
+                  overflow: 'auto'
                 }}>
                   <button
                     onClick={() => setShowNewPatientModal(false)}
@@ -6325,45 +7039,370 @@ export default function HomePage() {
                         name: '',
                         birthDate: '',
                         gender: '',
+                        email: '',
+                        phone: '',
                         diagnosis: '',
+                        tags: [],
+                        referringProfessional: '',
+                        firstConsultDate: '',
+                        emergencyContact: '',
+                        emergencyPhone: '',
                         notes: ''
                       })
                       setShowNewPatientModal(false)
                     }
                   }}>
-                    <div style={{ display: 'grid', gap: '1rem' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
-                          Nombre completo *
-                        </label>
-                        <input
-                          type="text"
-                          value={currentPatientData.name}
-                          onChange={(e) => setCurrentPatientData(prev => ({ ...prev, name: e.target.value }))}
-                          required
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '0.875rem',
-                            outline: 'none',
-                            boxSizing: 'border-box'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = '#29A98C'}
-                          onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                        />
+                    <div style={{ display: 'grid', gap: '1.5rem' }}>
+                      {/* Sección 1: Información Personal */}
+                      <div style={{ 
+                        backgroundColor: '#f8fafc', 
+                        padding: '1.5rem', 
+                        borderRadius: '12px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '1rem', 
+                          fontWeight: '600', 
+                          color: '#112F33', 
+                          marginBottom: '1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          👤 Información Personal
+                        </h3>
+                        
+                        <div style={{ display: 'grid', gap: '1rem' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                              Nombre completo *
+                            </label>
+                            <input
+                              type="text"
+                              value={currentPatientData.name}
+                              onChange={(e) => setCurrentPatientData(prev => ({ ...prev, name: e.target.value }))}
+                              placeholder="Ej: Juan Pérez García"
+                              required
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                              onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                            />
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                                Fecha de nacimiento
+                              </label>
+                              <input
+                                type="date"
+                                value={currentPatientData.birthDate}
+                                onChange={(e) => setCurrentPatientData(prev => ({ ...prev, birthDate: e.target.value }))}
+                                style={{
+                                  width: '100%',
+                                  padding: '0.75rem',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '8px',
+                                  fontSize: '0.875rem',
+                                  outline: 'none',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                              />
+                            </div>
+
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                                Sexo
+                              </label>
+                              <select
+                                value={currentPatientData.gender}
+                                onChange={(e) => setCurrentPatientData(prev => ({ ...prev, gender: e.target.value }))}
+                                style={{
+                                  width: '100%',
+                                  padding: '0.75rem',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '8px',
+                                  fontSize: '0.875rem',
+                                  outline: 'none',
+                                  backgroundColor: 'white',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                              >
+                                <option value="">Seleccionar...</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                                <option value="Otro">Otro</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                      {/* Sección 2: Información de Contacto */}
+                      <div style={{ 
+                        backgroundColor: '#f0f9ff', 
+                        padding: '1.5rem', 
+                        borderRadius: '12px',
+                        border: '1px solid #bae6fd'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '1rem', 
+                          fontWeight: '600', 
+                          color: '#0c4a6e', 
+                          marginBottom: '1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          📧 Información de Contacto
+                        </h3>
+                        
+                        <div style={{ display: 'grid', gap: '1rem' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                              Correo electrónico
+                            </label>
+                            <input
+                              type="email"
+                              value={currentPatientData.email}
+                              onChange={(e) => setCurrentPatientData(prev => ({ ...prev, email: e.target.value }))}
+                              placeholder="ejemplo@correo.com"
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                              onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                              Teléfono / WhatsApp
+                            </label>
+                            <input
+                              type="tel"
+                              value={currentPatientData.phone}
+                              onChange={(e) => setCurrentPatientData(prev => ({ ...prev, phone: e.target.value }))}
+                              placeholder="+34 612 345 678"
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                              onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sección 3: Información Clínica */}
+                      <div style={{ 
+                        backgroundColor: '#fff7ed', 
+                        padding: '1.5rem', 
+                        borderRadius: '12px',
+                        border: '1px solid #fed7aa'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '1rem', 
+                          fontWeight: '600', 
+                          color: '#9a3412', 
+                          marginBottom: '1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          🏥 Información Clínica
+                        </h3>
+                        
+                        <div style={{ display: 'grid', gap: '1rem' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                              Diagnóstico / Motivo de consulta
+                            </label>
+                            <input
+                              type="text"
+                              value={currentPatientData.diagnosis}
+                              onChange={(e) => setCurrentPatientData(prev => ({ ...prev, diagnosis: e.target.value }))}
+                              placeholder="Ej: Ansiedad generalizada, Depresión mayor..."
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                              onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                            />
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                                Referido por
+                              </label>
+                              <input
+                                type="text"
+                                value={currentPatientData.referringProfessional}
+                                onChange={(e) => setCurrentPatientData(prev => ({ ...prev, referringProfessional: e.target.value }))}
+                                placeholder="Ej: Dr. García, Hospital Central..."
+                                style={{
+                                  width: '100%',
+                                  padding: '0.75rem',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '8px',
+                                  fontSize: '0.875rem',
+                                  outline: 'none',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                              />
+                            </div>
+
+                            <div>
+                              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                                Primera consulta
+                              </label>
+                              <input
+                                type="date"
+                                value={currentPatientData.firstConsultDate}
+                                onChange={(e) => setCurrentPatientData(prev => ({ ...prev, firstConsultDate: e.target.value }))}
+                                style={{
+                                  width: '100%',
+                                  padding: '0.75rem',
+                                  border: '1px solid #d1d5db',
+                                  borderRadius: '8px',
+                                  fontSize: '0.875rem',
+                                  outline: 'none',
+                                  boxSizing: 'border-box'
+                                }}
+                                onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sección 4: Contacto de Emergencia */}
+                      <div style={{ 
+                        backgroundColor: '#fef2f2', 
+                        padding: '1.5rem', 
+                        borderRadius: '12px',
+                        border: '1px solid #fecaca'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '1rem', 
+                          fontWeight: '600', 
+                          color: '#dc2626', 
+                          marginBottom: '1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          🚨 Contacto de Emergencia (Opcional)
+                        </h3>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                              Nombre y relación
+                            </label>
+                            <input
+                              type="text"
+                              value={currentPatientData.emergencyContact}
+                              onChange={(e) => setCurrentPatientData(prev => ({ ...prev, emergencyContact: e.target.value }))}
+                              placeholder="Ej: María Pérez (hermana)"
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                              onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
+                              Teléfono de emergencia
+                            </label>
+                            <input
+                              type="tel"
+                              value={currentPatientData.emergencyPhone}
+                              onChange={(e) => setCurrentPatientData(prev => ({ ...prev, emergencyPhone: e.target.value }))}
+                              placeholder="+34 612 345 678"
+                              style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '1px solid #d1d5db',
+                                borderRadius: '8px',
+                                fontSize: '0.875rem',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                              onFocus={(e) => e.target.style.borderColor = '#29A98C'}
+                              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sección 5: Notas */}
+                      <div style={{ 
+                        backgroundColor: '#f3f4f6', 
+                        padding: '1.5rem', 
+                        borderRadius: '12px',
+                        border: '1px solid #e5e7eb'
+                      }}>
+                        <h3 style={{ 
+                          fontSize: '1rem', 
+                          fontWeight: '600', 
+                          color: '#374151', 
+                          marginBottom: '1rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}>
+                          📝 Notas Adicionales
+                        </h3>
+                        
                         <div>
-                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
-                            Fecha de nacimiento
-                          </label>
-                          <input
-                            type="date"
-                            value={currentPatientData.birthDate}
-                            onChange={(e) => setCurrentPatientData(prev => ({ ...prev, birthDate: e.target.value }))}
+                          <textarea
+                            value={currentPatientData.notes}
+                            onChange={(e) => setCurrentPatientData(prev => ({ ...prev, notes: e.target.value }))}
+                            placeholder="Notas adicionales, observaciones especiales, medicación actual, etc."
+                            rows="3"
                             style={{
                               width: '100%',
                               padding: '0.75rem',
@@ -6371,87 +7410,14 @@ export default function HomePage() {
                               borderRadius: '8px',
                               fontSize: '0.875rem',
                               outline: 'none',
+                              resize: 'vertical',
+                              fontFamily: 'inherit',
                               boxSizing: 'border-box'
                             }}
                             onFocus={(e) => e.target.style.borderColor = '#29A98C'}
                             onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                           />
                         </div>
-
-                        <div>
-                          <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
-                            Sexo
-                          </label>
-                          <select
-                            value={currentPatientData.gender}
-                            onChange={(e) => setCurrentPatientData(prev => ({ ...prev, gender: e.target.value }))}
-                            style={{
-                              width: '100%',
-                              padding: '0.75rem',
-                              border: '1px solid #d1d5db',
-                              borderRadius: '8px',
-                              fontSize: '0.875rem',
-                              outline: 'none',
-                              backgroundColor: 'white',
-                              boxSizing: 'border-box'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = '#29A98C'}
-                            onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                          >
-                            <option value="">Seleccionar...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
-                          Diagnóstico
-                        </label>
-                        <input
-                          type="text"
-                          value={currentPatientData.diagnosis}
-                          onChange={(e) => setCurrentPatientData(prev => ({ ...prev, diagnosis: e.target.value }))}
-                          placeholder="Diagnóstico principal o motivo de consulta"
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '0.875rem',
-                            outline: 'none',
-                            boxSizing: 'border-box'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = '#29A98C'}
-                          onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                        />
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', color: '#112F33', marginBottom: '0.5rem' }}>
-                          Notas
-                        </label>
-                        <textarea
-                          value={currentPatientData.notes}
-                          onChange={(e) => setCurrentPatientData(prev => ({ ...prev, notes: e.target.value }))}
-                          placeholder="Notas adicionales sobre el paciente"
-                          rows="3"
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '8px',
-                            fontSize: '0.875rem',
-                            outline: 'none',
-                            resize: 'vertical',
-                            fontFamily: 'inherit',
-                            boxSizing: 'border-box'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = '#29A98C'}
-                          onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                        />
                       </div>
                     </div>
 
@@ -7205,6 +8171,221 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup de selección de escalas para paciente */}
+      {showScaleSelectionPopup && scaleSelectionPatient && (
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          zIndex: 9999,
+          padding: '1rem'
+        }}>
+          <div style={{ 
+            backgroundColor: 'white', 
+            borderRadius: '16px', 
+            width: '100%', 
+            maxWidth: '800px', 
+            maxHeight: '80vh', 
+            overflow: 'hidden',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            {/* Header */}
+            <div style={{ 
+              padding: '2rem 2rem 1rem', 
+              borderBottom: '1px solid #e2e8f0',
+              background: 'linear-gradient(135deg, #29A98C 0%, #22C55E 100%)',
+              color: 'white'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: '700', margin: 0 }}>
+                  Seleccionar Escala para Evaluación
+                </h2>
+                <button 
+                  onClick={() => {
+                    setShowScaleSelectionPopup(false)
+                    setScaleSelectionPatient(null)
+                  }}
+                  style={{ 
+                    background: 'rgba(255, 255, 255, 0.2)', 
+                    border: 'none', 
+                    borderRadius: '8px', 
+                    padding: '0.5rem', 
+                    color: 'white', 
+                    cursor: 'pointer',
+                    fontSize: '1.5rem',
+                    lineHeight: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ 
+                  width: '3rem', 
+                  height: '3rem', 
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '1.5rem'
+                }}>
+                  👤
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: '600', margin: 0, marginBottom: '0.25rem' }}>
+                    {scaleSelectionPatient.name}
+                  </h3>
+                  <p style={{ fontSize: '0.875rem', opacity: '0.9', margin: 0 }}>
+                    Selecciona la escala que deseas aplicar a este paciente
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Lista de escalas */}
+            <div style={{ 
+              padding: '1.5rem', 
+              maxHeight: 'calc(80vh - 200px)', 
+              overflowY: 'auto'
+            }}>
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                {(() => {
+                  try {
+                    const orderedScales = getOrderedScalesForPatient(scaleSelectionPatient)
+                    if (!orderedScales || orderedScales.length === 0) {
+                      return (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                          No hay escalas disponibles
+                        </div>
+                      )
+                    }
+                    return orderedScales.map((scale, index) => {
+                  // Contar evaluaciones previas de esta escala para este paciente
+                  const patientEvaluations = evaluationHistory.filter(evaluation => 
+                    evaluation.patient === scaleSelectionPatient.name && 
+                    evaluation.scale.toLowerCase().replace(/[^a-z0-9]/g, '') === scale.id
+                  )
+                  const previousEvaluations = patientEvaluations.length
+
+                  return (
+                    <div 
+                      key={scale.id}
+                      onClick={() => selectScaleForPatient(scale.id)}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '1rem',
+                        padding: '1rem 1.5rem', 
+                        backgroundColor: index < 3 ? '#f8fafc' : 'white',
+                        border: index < 3 ? '2px solid #29A98C' : '1px solid #e2e8f0',
+                        borderRadius: '12px', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.backgroundColor = '#f1f5f9'
+                        e.target.style.transform = 'translateY(-1px)'
+                        e.target.style.boxShadow = '0 4px 12px rgba(41, 169, 140, 0.15)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.backgroundColor = index < 3 ? '#f8fafc' : 'white'
+                        e.target.style.transform = 'translateY(0)'
+                        e.target.style.boxShadow = 'none'
+                      }}
+                    >
+                      {/* Icono de la escala */}
+                      <div style={{ 
+                        width: '3rem', 
+                        height: '3rem', 
+                        backgroundColor: scale.color || '#29A98C', 
+                        borderRadius: '8px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '1.25rem',
+                        fontWeight: 'bold',
+                        flexShrink: 0
+                      }}>
+                        {scale.shortName?.substring(0, 2) || scale.fullName.substring(0, 2)}
+                      </div>
+
+                      {/* Información de la escala */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                          <h4 style={{ fontSize: '1rem', fontWeight: '700', color: '#112F33', margin: 0 }}>
+                            {scale.fullName}
+                          </h4>
+                          {index < 3 && (
+                            <span style={{
+                              fontSize: '0.75rem',
+                              fontWeight: '600',
+                              backgroundColor: '#29A98C',
+                              color: 'white',
+                              padding: '0.125rem 0.5rem',
+                              borderRadius: '12px'
+                            }}>
+                              Favorita
+                            </span>
+                          )}
+                        </div>
+                        <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0, marginBottom: '0.5rem' }}>
+                          {scale.description}
+                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.75rem', color: '#64748b' }}>
+                          <span>⏱️ {scale.duration} min</span>
+                          <span>📋 {scale.questions} preguntas</span>
+                          <span>👥 {scale.applicationType}</span>
+                          {previousEvaluations > 0 && (
+                            <span style={{ 
+                              color: '#29A98C', 
+                              fontWeight: '600',
+                              backgroundColor: '#ecfdf5',
+                              padding: '0.125rem 0.375rem',
+                              borderRadius: '8px'
+                            }}>
+                              ✓ {previousEvaluations} evaluación{previousEvaluations !== 1 ? 'es' : ''} previa{previousEvaluations !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Flecha de acción */}
+                      <div style={{ 
+                        fontSize: '1.25rem', 
+                        color: '#29A98C',
+                        flexShrink: 0
+                      }}>
+                        →
+                      </div>
+                    </div>
+                  )
+                    })
+                  } catch (error) {
+                    console.error('Error loading scales:', error)
+                    return (
+                      <div style={{ textAlign: 'center', padding: '2rem', color: '#ef4444' }}>
+                        Error al cargar las escalas. Por favor, recarga la página.
+                      </div>
+                    )
+                  }
+                })()}
               </div>
             </div>
           </div>
